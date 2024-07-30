@@ -1,0 +1,36 @@
+:root {
+  font-family: Roboto, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: normal;
+  color: rgba(255, 255, 255, 0.87);
+  /* background-color: #242424; */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+div:not(.simplebar-content-wrapper)::-webkit-scrollbar-thumb,
+ul:not(.simplebar-content-wrapper)::-webkit-scrollbar-thumb,
+ol:not(.simplebar-content-wrapper)::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  scrollbar-width: thin;
+}
+
+div:not(.simplebar-content-wrapper)::-webkit-scrollbar,
+ul:not(.simplebar-content-wrapper)::-webkit-scrollbar,
+ol:not(.simplebar-content-wrapper)::-webkit-scrollbar {
+  scrollbar-width: thin;
+  background-color: transparent;
+  border-radius: 100px;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

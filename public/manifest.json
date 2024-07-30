@@ -1,0 +1,16 @@
+{
+  "name": "Phases Automated",
+  "version": "0.0.0",
+  "manifest_version": 1,
+  "author": "Seamus Finlayson",
+  "homepage_url": "https://github.com/SeamusFinlayson",
+  "icon": "/vite.svg",
+  "description": "Phase automation tool",
+  "action": {
+    "title": "Phases Automated",
+    "icon": "/vite.svg",
+    "popover": "/src/action.html",
+    "height": 600,
+    "width": 330
+  }
+}
