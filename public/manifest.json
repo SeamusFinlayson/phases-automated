@@ -9,8 +9,9 @@
   "action": {
     "title": "Phases Automated",
     "icon": "/vite.svg",
-    "popover": "/src/action.html",
+    "popover": "/src/action/action.html",
     "height": 600,
     "width": 330
-  }
+  },
+  "background_url": "/src/background/background.html"
 }
