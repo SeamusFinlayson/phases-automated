@@ -6,22 +6,24 @@ import {
   getAutomationContextMenuFromScene,
   getAutomationContextMenuFromSceneMetadata,
   NO_CONTEXT_MENU,
+  setAutomationContextMenu,
 } from "../sceneMetadataHelpers";
 import { getPluginId } from "../getPluginId";
 import {
   getPhaseData,
   getPhaseMetadataId,
+  ITEM_AUTOMATION_METADATA_ID,
+  MAXIMUM_PHASES,
   setPhaseData,
 } from "../itemMetadataHelpers";
 
 const menuIcon = new URL(
-  "../assets/react.svg#icon",
+  "../assets/iconNoFill.svg#icon",
   import.meta.url
 ).toString();
 
 const ADD_MENU_ID = "addToAutomation";
 const REMOVE_MENU_ID = "removeFromAutomation";
-const AUTOMATION_METADATA_ID = "automationId";
 
 let automationContextMenu = NO_CONTEXT_MENU;
 let automations: Automation[] = [];
@@ -39,7 +41,8 @@ OBR.onReady(async () => {
     items.forEach(item => {
       const automationIndex = automations.findIndex(
         automation =>
-          automation.id === item.metadata[getPluginId(AUTOMATION_METADATA_ID)]
+          automation.id ===
+          item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)]
       );
       if (automationIndex !== -1)
         automatedItems.push({
@@ -100,6 +103,10 @@ function createContextMenu() {
     return;
   }
   const index = getIndexOfContextMenuAutomation();
+  if (index === -1) {
+    setAutomationContextMenu(NO_CONTEXT_MENU);
+    return;
+  }
   // const name = automations[index].name;
   // const phase = automations[index].currentPhase;
   const automationId = automations[index].id;
@@ -120,7 +127,7 @@ function createContextMenu() {
         filter: {
           every: [
             {
-              key: ["metadata", `${getPluginId(AUTOMATION_METADATA_ID)}`],
+              key: ["metadata", `${getPluginId(ITEM_AUTOMATION_METADATA_ID)}`],
               value: undefined,
               operator: "==",
             },
@@ -136,7 +143,8 @@ function createContextMenu() {
         item => selection?.findIndex(id => id === item.id) !== -1,
         items => {
           items.forEach(item => {
-            item.metadata[getPluginId(AUTOMATION_METADATA_ID)] = automationId;
+            item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)] =
+              automationId;
             setPhaseData(item, currentPhase);
           });
         }
@@ -152,7 +160,7 @@ function createContextMenu() {
         filter: {
           every: [
             {
-              key: ["metadata", `${getPluginId(AUTOMATION_METADATA_ID)}`],
+              key: ["metadata", `${getPluginId(ITEM_AUTOMATION_METADATA_ID)}`],
               value: undefined,
               operator: "!=",
             },
@@ -169,8 +177,8 @@ function createContextMenu() {
         items => {
           items.forEach(item => {
             // Clear all extension metadata
-            item.metadata[getPluginId(AUTOMATION_METADATA_ID)] = undefined;
-            for (let i = 1; i < 6; i++) {
+            item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)] = undefined;
+            for (let i = 1; i < MAXIMUM_PHASES; i++) {
               item.metadata[getPhaseMetadataId(i)] = undefined;
             }
           });

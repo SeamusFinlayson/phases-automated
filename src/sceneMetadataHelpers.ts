@@ -9,7 +9,7 @@ export interface Automation {
   id: string;
   name: string;
   currentPhase: number;
-  maxPhase: number;
+  totalPhases: number;
 }
 
 export function isAutomation(
@@ -26,8 +26,8 @@ export function isAutomation(
   if (automation.currentPhase === undefined) return false;
   if (typeof automation.currentPhase !== "number") return false;
 
-  if (automation.maxPhase === undefined) return false;
-  if (typeof automation.maxPhase !== "number") return false;
+  if (automation.totalPhases === undefined) return false;
+  if (typeof automation.totalPhases !== "number") return false;
 
   return true;
 }
@@ -64,6 +64,12 @@ export function getAutomationsFromSceneMetadata(sceneMetadata: Metadata) {
   }
 
   return automations;
+}
+
+export function setAutomationContextMenu(id: string) {
+  OBR.scene.setMetadata({
+    [getPluginId(AUTOMATION_CONTEXT_MENU_METADATA_ID)]: id,
+  });
 }
 
 /** Get context menu phase item from scene */

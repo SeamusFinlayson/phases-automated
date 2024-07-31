@@ -2,6 +2,7 @@ import { Item, Vector2 } from "@owlbear-rodeo/sdk";
 import { getPluginId } from "./getPluginId";
 
 export const ITEM_AUTOMATION_METADATA_ID = "automationId";
+export const MAXIMUM_PHASES = 8;
 
 export const getPhaseMetadataId = (phase: number) =>
   getPluginId(`phase${phase}`);

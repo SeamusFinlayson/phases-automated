@@ -1,9 +1,9 @@
 import {
   Button,
   IconButton,
+  Radio,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
   useTheme,
 } from "@mui/material";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
@@ -16,10 +16,11 @@ import { getPluginId } from "../getPluginId";
 import {
   Automation,
   AUTOMATION_METADATA_ID,
-  AUTOMATION_CONTEXT_MENU_METADATA_ID,
   getAutomationsFromSceneMetadata,
   NO_CONTEXT_MENU,
   getAutomationContextMenuFromScene,
+  setAutomationContextMenu,
+  getAutomationContextMenuFromSceneMetadata,
 } from "../sceneMetadataHelpers";
 import {
   getPhaseMetadataId,
@@ -28,18 +29,20 @@ import {
   setPhaseData,
 } from "../itemMetadataHelpers";
 
-const MAX_AUTOMATIONS = 3;
+const MAX_AUTOMATIONS = 8;
+const MINIMUM_PHASES = 2;
+const MAXIMUM_PHASES = 8;
 
 function createAutomation(
   name: string,
   currentPhase: number,
-  maxPhase: number
+  totalPhases: number
 ): Automation {
   return {
     id: Date.now().toString() + Math.trunc(1000 * Math.random()),
     name,
     currentPhase,
-    maxPhase,
+    totalPhases: totalPhases,
   };
 }
 
@@ -76,9 +79,9 @@ type Action =
       currentPhase: number;
     }
   | {
-      type: "maxPhaseChange";
+      type: "totalPhasesChange";
       automationId: string;
-      maxPhase: number;
+      totalPhases: number;
     };
 
 /** Other code execution dependant on reducer updates, should only use async functions w/o await to not block state updates */
@@ -153,10 +156,10 @@ function reducer(state: Automation[], action: Action): Automation[] {
         if (automation.id !== action.automationId) return automation;
         return { ...automation, currentPhase: action.currentPhase };
       });
-    case "maxPhaseChange":
+    case "totalPhasesChange":
       return state.map(automation => {
         if (automation.id !== action.automationId) return automation;
-        return { ...automation, maxPhase: action.maxPhase };
+        return { ...automation, totalPhases: action.totalPhases };
       });
     default:
       return state;
@@ -185,9 +188,7 @@ export default function App({
 
   const handleActiveContextMenu = (id: string) => {
     setActiveAutomationContextMenu(id);
-    OBR.scene.setMetadata({
-      [getPluginId(AUTOMATION_CONTEXT_MENU_METADATA_ID)]: id,
-    });
+    setAutomationContextMenu(id);
   };
 
   useEffect(
@@ -197,6 +198,9 @@ export default function App({
           type: "overwrite",
           automations: getAutomationsFromSceneMetadata(metadata),
         });
+        setActiveAutomationContextMenu(
+          getAutomationContextMenuFromSceneMetadata(metadata)
+        );
       }),
     []
   );
@@ -214,18 +218,7 @@ export default function App({
     []
   );
 
-  const buttonHeight = 40;
   const automationElements: JSX.Element[] = [];
-  const contextMenuOptions: JSX.Element[] = [
-    <ToggleButton
-      key={NO_CONTEXT_MENU}
-      value={NO_CONTEXT_MENU}
-      sx={{ height: buttonHeight }}
-      onClick={() => handleActiveContextMenu(NO_CONTEXT_MENU)}
-    >
-      None
-    </ToggleButton>,
-  ];
   for (let i = 0; i < automations.length; i++) {
     automationElements.push(
       <AutomationElement
@@ -234,32 +227,30 @@ export default function App({
         dispatch={dispatch}
         editing={editing}
         index={i}
+        radioChecked={activeAutomationContextMenu === automations[i].id}
+        setRadioChecked={() => handleActiveContextMenu(automations[i].id)}
       ></AutomationElement>
-    );
-    contextMenuOptions.push(
-      <ToggleButton
-        key={automations[i].id}
-        value={automations[i].id}
-        sx={{ height: buttonHeight }}
-        onClick={() => handleActiveContextMenu(automations[i].id)}
-      >
-        {automations[i].name !== "" ? automations[i].name : i}
-      </ToggleButton>
     );
   }
 
   const sceneDependantElements = (
     <>
       <div className="flex flex-col">
-        <div className="bg-black/20 p-2 dark:bg-white/10 rounded-[20px] flex flex-col">
-          <p className="text-center">Active Automation Context Menu</p>
-          <ToggleButtonGroup
-            color="primary"
-            orientation="vertical"
-            value={activeAutomationContextMenu}
-          >
-            {contextMenuOptions}
-          </ToggleButtonGroup>
+        <div className="p-2 dark:bg-white/0 rounded-[20px] flex flex-col outline outline-1 outline-black/10 dark:outline-white/10 gap-2">
+          <div className="flex items-center">
+            <Radio
+              checked={activeAutomationContextMenu === NO_CONTEXT_MENU}
+              onClick={() => handleActiveContextMenu(NO_CONTEXT_MENU)}
+            ></Radio>
+            <div>
+              <p className="text-left pt-0.5 text-black/[0.87] dark:text-white">
+                No Context Menu
+              </p>
+              <p className="text-left text-xs max-w-56 text-black/[0.6] dark:text-white/70">
+                To add items to an automation, select that automation.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -285,8 +276,10 @@ export default function App({
 
   return (
     <div className={isDark ? "dark" : ""}>
-      <div className="flex flex-col p-4 gap-3">
-        <Typography variant="h5">Phases Automated</Typography>
+      <div className="flex h-screen flex-col p-3 gap-3 overflow-y-auto">
+        <h1 className="font-bold text-lg pl-1 text-black/[0.87] dark:text-white">
+          Phases Automated
+        </h1>
         {sceneReady && sceneDependantElements}
       </div>
     </div>
@@ -298,11 +291,15 @@ function AutomationElement({
   dispatch,
   editing,
   index,
+  radioChecked,
+  setRadioChecked,
 }: {
   automation: Automation;
   dispatch: React.Dispatch<Action>;
   editing: boolean;
   index: number;
+  radioChecked: boolean;
+  setRadioChecked: (id: string) => void;
 }): JSX.Element {
   const [name, setName] = useState(automation.name);
 
@@ -311,7 +308,7 @@ function AutomationElement({
   const buttonHeight = 40;
   const phaseButtons: JSX.Element[] = [];
 
-  for (let i = 1; i <= automation.maxPhase; i++) {
+  for (let i = 1; i <= automation.totalPhases; i++) {
     phaseButtons.push(
       <ToggleButton
         key={i}
@@ -331,80 +328,97 @@ function AutomationElement({
 
   return (
     <div className="flex flex-col">
-      <div className="bg-black/20 p-2 dark:bg-white/10 rounded-[20px] flex flex-col gap-2">
-        <input
-          className="bg-black/20 rounded-2xl px-2 h-10 outline-none focus:bg-black/35 duration-75 text-center"
-          placeholder="Automation Name"
-          value={name}
-          onChange={e => {
-            setName(e.target.value);
-          }}
-          onBlur={() => {
-            dispatch({
-              type: "nameChange",
-              automationId: automation.id,
-              name: name,
-            });
-          }}
-        ></input>
-        {editing ? (
-          <div className="flex justify-between">
-            <Button
-              onClick={() => {
-                dispatch({
-                  type: "deleteAutomation",
-                  automationId: automation.id,
-                });
-              }}
-              sx={{ height: buttonHeight }}
-            >
-              Delete
-            </Button>
-            <div>
-              <IconButton
-                onClick={() =>
+      <div
+        className={
+          "relative bg-rose-200/30 p-2 dark:bg-slate-300/10 rounded-[20px] flex flex-col gap-2 outline outline-1 outline-black/10 dark:outline-none"
+        }
+      >
+        {editing && (
+          <div className="z-10 absolute w-full h-h-full dark:bg-purple-600/85 bg-purple-300/85 top-0 left-0 right-0 bottom-0 rounded-[20px]">
+            <div className="flex items-center justify-around h-full">
+              <div className="w-[40px]"></div>
+              <button
+                className="text-xl rounded-2xl px-4 py-2 hover:bg-black/[0.045] dark:hover:bg-white/[0.08] duration-150 text-black/[0.87] dark:text-white"
+                onClick={() => {
                   dispatch({
-                    type: "moveDown",
+                    type: "deleteAutomation",
                     automationId: automation.id,
-                    index,
-                  })
-                }
+                  });
+                }}
               >
-                <ArrowDownwardRoundedIcon color="primary"></ArrowDownwardRoundedIcon>
-              </IconButton>
-              <IconButton
-                onClick={() =>
-                  dispatch({
-                    type: "moveUp",
-                    automationId: automation.id,
-                    index,
-                  })
-                }
-              >
-                <ArrowUpwardRoundedIcon color="primary"></ArrowUpwardRoundedIcon>
-              </IconButton>
+                {"delete"}
+              </button>
+
+              <div className="flex flex-col gap-2">
+                <IconButton
+                  onClick={() =>
+                    dispatch({
+                      type: "moveUp",
+                      automationId: automation.id,
+                      index,
+                    })
+                  }
+                >
+                  <ArrowUpwardRoundedIcon></ArrowUpwardRoundedIcon>
+                </IconButton>
+                <IconButton
+                  onClick={() =>
+                    dispatch({
+                      type: "moveDown",
+                      automationId: automation.id,
+                      index,
+                    })
+                  }
+                >
+                  <ArrowDownwardRoundedIcon></ArrowDownwardRoundedIcon>
+                </IconButton>
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="flex justify-between">
-            <ToggleButtonGroup
-              color="primary"
-              value={automation.currentPhase.toString()}
-              exclusive
-              sx={{ height: buttonHeight }}
-            >
-              {phaseButtons}
-            </ToggleButtonGroup>
+        )}
+        <div className="flex items-center">
+          <Radio
+            checked={radioChecked}
+            onClick={() => setRadioChecked(automation.id)}
+          ></Radio>
+          <input
+            className={
+              "bg-purple-300/15 grow shrink focus:bg-purple-300/35 dark:bg-black/20 text-black/[0.87] dark:text-white rounded-2xl px-2 h-10 outline-none dark:focus:bg-black/35 duration-75 text-center outline w-full outline-1 outline-offset-0 outline-black/10 dark:outline-none"
+            }
+            placeholder={`Automation ${index + 1}`}
+            value={name}
+            onChange={e => {
+              setName(e.target.value);
+            }}
+            onBlur={() => {
+              dispatch({
+                type: "nameChange",
+                automationId: automation.id,
+                name: name,
+              });
+            }}
+          ></input>
+        </div>
+        <div className="flex justify-between flex-wrap-reverse gap-2">
+          <ToggleButtonGroup
+            color="primary"
+            value={automation.currentPhase.toString()}
+            exclusive
+            sx={{ height: buttonHeight }}
+          >
+            {phaseButtons}
+          </ToggleButtonGroup>
+          <div className="grow flex justify-end">
             <div>
               <IconButton
                 onClick={() =>
                   dispatch({
-                    type: "maxPhaseChange",
+                    type: "totalPhasesChange",
                     automationId: automation.id,
-                    maxPhase:
-                      automation.maxPhase > 2
-                        ? automation.maxPhase - 1
-                        : automation.maxPhase,
+                    totalPhases:
+                      automation.totalPhases > MINIMUM_PHASES
+                        ? automation.totalPhases - 1
+                        : automation.totalPhases,
                   })
                 }
               >
@@ -413,12 +427,12 @@ function AutomationElement({
               <IconButton
                 onClick={() =>
                   dispatch({
-                    type: "maxPhaseChange",
+                    type: "totalPhasesChange",
                     automationId: automation.id,
-                    maxPhase:
-                      automation.maxPhase < 6
-                        ? automation.maxPhase + 1
-                        : automation.maxPhase,
+                    totalPhases:
+                      automation.totalPhases < MAXIMUM_PHASES
+                        ? automation.totalPhases + 1
+                        : automation.totalPhases,
                   })
                 }
               >
@@ -426,7 +440,7 @@ function AutomationElement({
               </IconButton>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
