@@ -12,13 +12,11 @@
   "dependencies": {
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
-    "@mui/icons-material": "^5.16.5",
-    "@mui/material": "^5.16.5",
+    "@mui/icons-material": "^5.16.6",
+    "@mui/material": "^5.16.6",
     "@owlbear-rodeo/sdk": "^2.4.0",
-    "immer": "^10.1.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "use-immer": "^0.10.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",

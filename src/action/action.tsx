@@ -12,6 +12,10 @@ import {
 } from "../sceneMetadataHelpers.ts";
 
 OBR.onReady(async () => {
+  let role = await OBR.player.getRole();
+  let isDark = (await OBR.theme.getTheme()).mode === "DARK";
+  setHeight();
+
   let initialAutomations: Automation[] = [];
   let initialPhaseContextMenu: string = "";
   const initialSceneReady = await OBR.scene.isReady();
@@ -20,16 +24,47 @@ OBR.onReady(async () => {
     initialPhaseContextMenu = await getAutomationContextMenuFromScene();
   }
 
-  ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-      <PluginThemeProvider>
-        <CssBaseline />
-        <App
-          initialAutomations={initialAutomations}
-          initialSceneReady={initialSceneReady}
-          initialPhaseContextMenu={initialPhaseContextMenu}
-        />
-      </PluginThemeProvider>
-    </React.StrictMode>
-  );
+  const root = ReactDOM.createRoot(document.getElementById("root")!);
+  render();
+
+  OBR.player.onChange(player => {
+    role = player.role;
+    setHeight();
+    render();
+  });
+
+  OBR.theme.onChange(theme => {
+    isDark = theme.mode === "DARK";
+    if (role !== "GM") render();
+  });
+
+  function setHeight() {
+    OBR.action.setHeight(role === "GM" ? 500 : 100);
+  }
+
+  function render() {
+    root.render(
+      <React.StrictMode>
+        <PluginThemeProvider>
+          <CssBaseline />
+          {role === "GM" ? (
+            <App
+              initialAutomations={initialAutomations}
+              initialSceneReady={initialSceneReady}
+              initialPhaseContextMenu={initialPhaseContextMenu}
+            />
+          ) : (
+            <div className={isDark ? "dark" : ""}>
+              <div className="flex h-screen flex-col p-3 gap-3 overflow-y-auto">
+                <h1 className="font-bold text-lg pl-1 text-black/[0.87] dark:text-white">
+                  Phases Automated
+                </h1>
+                <p className="pl-1 text-sm">GM Access Required</p>
+              </div>
+            </div>
+          )}
+        </PluginThemeProvider>
+      </React.StrictMode>
+    );
+  }
 });

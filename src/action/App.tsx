@@ -25,13 +25,13 @@ import {
 import {
   getPhaseMetadataId,
   ITEM_AUTOMATION_METADATA_ID,
+  MAXIMUM_PHASES,
   setItemToPhase,
   setPhaseData,
 } from "../itemMetadataHelpers";
 
 const MAX_AUTOMATIONS = 8;
 const MINIMUM_PHASES = 2;
-const MAXIMUM_PHASES = 8;
 
 function createAutomation(
   name: string,
