@@ -5,15 +5,44 @@ export const AUTOMATION_METADATA_ID = "automations";
 export const AUTOMATION_CONTEXT_MENU_METADATA_ID = "contextMenuPhase";
 export const NO_CONTEXT_MENU = "none";
 
+export const MAX_AUTOMATIONS = 8;
+export const MINIMUM_PHASES = 2;
+
+export function createAutomation(
+  name: string,
+  currentPhase: number,
+  totalPhases: number,
+): Automation {
+  return {
+    id: Date.now().toString() + Math.trunc(1000 * Math.random()),
+    name,
+    currentPhase,
+    totalPhases: totalPhases,
+    properties: [],
+  };
+}
+
+export type ItemProperty =
+  | "POSITION"
+  | "ROTATION"
+  | "SCALE"
+  | "VISIBLE"
+  | "LOCKED"
+  | "NAME"
+  | "Z_INDEX"
+  | "METADATA"
+  | "IMAGE_URL";
+
 export interface Automation {
   id: string;
   name: string;
   currentPhase: number;
   totalPhases: number;
+  properties: ItemProperty[];
 }
 
 export function isAutomation(
-  potentialAutomation: unknown
+  potentialAutomation: unknown,
 ): potentialAutomation is Automation {
   const automation = potentialAutomation as Automation;
 
@@ -29,6 +58,12 @@ export function isAutomation(
   if (automation.totalPhases === undefined) return false;
   if (typeof automation.totalPhases !== "number") return false;
 
+  if (!Array.isArray(automation.properties)) return false;
+  if (
+    (automation.properties.filter((value) => typeof value !== "string"),
+    length > 0)
+  )
+    return false;
   return true;
 }
 
@@ -56,7 +91,7 @@ export function getAutomationsFromSceneMetadata(sceneMetadata: Metadata) {
     if (!isAutomation(automation)) {
       console.log(
         "Invalid automation detected, automation was deleted, see contents below: ",
-        automation
+        automation,
       );
     } else {
       automations.push(automation);
@@ -84,7 +119,7 @@ export async function getAutomationContextMenuFromScene(): Promise<string> {
 }
 
 export function getAutomationContextMenuFromSceneMetadata(
-  sceneMetadata: Metadata
+  sceneMetadata: Metadata,
 ) {
   let automationContextMenu = "none";
   const automationContextMenuMetadata =

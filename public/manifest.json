@@ -10,7 +10,7 @@
     "title": "Phases Automated",
     "icon": "/iconNoFill.svg",
     "popover": "/src/action/action.html",
-    "height": 500,
+    "height": 700,
     "width": 330
   },
   "background_url": "/src/background/background.html"
