@@ -7,7 +7,8 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { MAXIMUM_PHASES } from "../itemMetadataHelpers";
-import { Automation, MINIMUM_PHASES } from "../sceneMetadataHelpers";
+import { MINIMUM_PHASES } from "../sceneMetadataHelpers";
+import { Automation } from "../types";
 import PropertiesDropdown from "./PropertiesDropdown";
 
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";

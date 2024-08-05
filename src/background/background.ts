@@ -1,6 +1,5 @@
 import OBR, { Item } from "@owlbear-rodeo/sdk";
 import {
-  Automation,
   getAutomationsFromScene,
   getAutomationsFromSceneMetadata,
   getAutomationContextMenuFromScene,
@@ -8,6 +7,7 @@ import {
   NO_CONTEXT_MENU,
   setAutomationContextMenu,
 } from "../sceneMetadataHelpers";
+import { Automation } from "../types";
 import { getPluginId } from "../getPluginId";
 import {
   getPhaseData,
@@ -19,7 +19,7 @@ import {
 
 const menuIcon = new URL(
   "../assets/iconNoFill.svg#icon",
-  import.meta.url
+  import.meta.url,
 ).toString();
 
 const ADD_MENU_ID = "addToAutomation";
@@ -30,48 +30,65 @@ let automations: Automation[] = [];
 
 OBR.onReady(async () => {
   init();
-  OBR.scene.onMetadataChange(metadata => {
+  OBR.scene.onMetadataChange((metadata) => {
     automationContextMenu = getAutomationContextMenuFromSceneMetadata(metadata);
     automations = getAutomationsFromSceneMetadata(metadata);
     createContextMenu();
   });
-  OBR.scene.items.onChange(items => {
+  OBR.scene.items.onChange((items) => {
     // Filter out phase changes too
-    const automatedItems: { item: Item; phase: number }[] = [];
-    items.forEach(item => {
+    const automatedItems: { item: Item; automation: Automation }[] = [];
+    items.forEach((item) => {
       const automationIndex = automations.findIndex(
-        automation =>
+        (automation) =>
           automation.id ===
-          item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)]
+          item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)],
       );
       if (automationIndex !== -1)
         automatedItems.push({
           item,
-          phase: automations[automationIndex].currentPhase,
+          automation: automations[automationIndex],
         });
     });
-    const changedItems = automatedItems.filter(item => {
-      const phaseData = getPhaseData(item.item, item.phase);
+    const changedItems = automatedItems.filter((item) => {
+      const phaseData = getPhaseData(
+        item.item,
+        item.automation.currentPhase,
+        item.automation.properties,
+      );
+      // console.log("itemitem position", item.item.position);
+      // console.log("phase data", phaseData);
+      // console.log(item.automation.properties.includes("POSITION"));
+      console.log(item.item.visible, phaseData?.visible);
       return (
         phaseData !== null &&
-        (item.item.position.x !== phaseData.position.x ||
-          item.item.position.y !== phaseData.position.y ||
-          item.item.scale.x !== phaseData.scale.x ||
-          item.item.scale.y !== phaseData.scale.y ||
-          item.item.rotation !== phaseData.rotation ||
-          item.item.visible !== phaseData.visible)
+        ((item.automation.properties.includes("POSITION") &&
+          (item.item.position.x !== phaseData.position?.x ||
+            item.item.position.y !== phaseData.position?.y)) ||
+          (item.automation.properties.includes("SCALE") &&
+            (item.item.scale.x !== phaseData.scale?.x ||
+              item.item.scale.y !== phaseData.scale?.y)) ||
+          (item.automation.properties.includes("ROTATION") &&
+            item.item.rotation !== phaseData.rotation) ||
+          (item.automation.properties.includes("VISIBLE") &&
+            item.item.visible !== phaseData.visible))
       );
     });
+    console.log("length", changedItems.length);
     OBR.scene.items.updateItems(
-      changedItems.map(item => item.item),
-      items => {
-        items.forEach(item => {
+      changedItems.map((item) => item.item),
+      (items) => {
+        items.forEach((item) => {
           const index = changedItems.findIndex(
-            value => item.id === value.item.id
+            (value) => item.id === value.item.id,
           );
-          setPhaseData(item, changedItems[index].phase);
+          setPhaseData(
+            item,
+            changedItems[index].automation.currentPhase,
+            changedItems[index].automation.properties,
+          );
         });
-      }
+      },
     );
   });
 });
@@ -83,7 +100,7 @@ async function init() {
     createContextMenu();
   };
   // Handle when the scene is either changed or made ready after extension load
-  OBR.scene.onReadyChange(async isReady => {
+  OBR.scene.onReadyChange(async (isReady) => {
     if (isReady) {
       handleSceneReady();
     }
@@ -111,6 +128,7 @@ function createContextMenu() {
   // const phase = automations[index].currentPhase;
   const automationId = automations[index].id;
   const currentPhase = automations[index].currentPhase;
+  const automationProperties = automations[index].properties;
 
   const getAddLabel = () => {
     return `Add to Automation`;
@@ -140,14 +158,14 @@ function createContextMenu() {
     onClick: async () => {
       const selection = await OBR.player.getSelection();
       OBR.scene.items.updateItems(
-        item => selection?.findIndex(id => id === item.id) !== -1,
-        items => {
-          items.forEach(item => {
+        (item) => selection?.findIndex((id) => id === item.id) !== -1,
+        (items) => {
+          items.forEach((item) => {
             item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)] =
               automationId;
-            setPhaseData(item, currentPhase);
+            setPhaseData(item, currentPhase, automationProperties);
           });
-        }
+        },
       );
     },
   });
@@ -173,20 +191,22 @@ function createContextMenu() {
     onClick: async () => {
       const selection = await OBR.player.getSelection();
       OBR.scene.items.updateItems(
-        item => selection?.findIndex(id => id === item.id) !== -1,
-        items => {
-          items.forEach(item => {
+        (item) => selection?.findIndex((id) => id === item.id) !== -1,
+        (items) => {
+          items.forEach((item) => {
             // Clear all extension metadata
             item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)] = undefined;
             for (let i = 1; i < MAXIMUM_PHASES; i++) {
               item.metadata[getPhaseMetadataId(i)] = undefined;
             }
           });
-        }
+        },
       );
     },
   });
 }
 
 const getIndexOfContextMenuAutomation = () =>
-  automations.findIndex(automation => automation.id === automationContextMenu);
+  automations.findIndex(
+    (automation) => automation.id === automationContextMenu,
+  );

@@ -1,5 +1,13 @@
 import { Item, Vector2 } from "@owlbear-rodeo/sdk";
 import { getPluginId } from "./getPluginId";
+import { ItemProperty } from "./types";
+
+interface PhaseData {
+  position: Vector2 | undefined;
+  scale: Vector2 | undefined;
+  rotation: number | undefined;
+  visible: boolean | undefined;
+}
 
 export const ITEM_AUTOMATION_METADATA_ID = "automationId";
 export const MAXIMUM_PHASES = 8;
@@ -7,44 +15,67 @@ export const MAXIMUM_PHASES = 8;
 export const getPhaseMetadataId = (phase: number) =>
   getPluginId(`phase${phase}`);
 
-export const setPhaseData = (item: Item, phase: number) => {
+export const setPhaseData = (
+  item: Item,
+  phase: number,
+  properties: ItemProperty[],
+) => {
   if (typeof phase !== "number") throw "Error: expected type number";
   item.metadata[getPhaseMetadataId(phase)] = {
-    position: item.position,
-    scale: item.scale,
-    rotation: item.rotation,
-    visible: item.visible,
+    position: properties.includes("POSITION") ? item.position : undefined,
+    scale: properties.includes("SCALE") ? item.scale : undefined,
+    rotation: properties.includes("ROTATION") ? item.rotation : undefined,
+    visible: properties.includes("VISIBLE") ? item.visible : undefined,
   };
 };
 
-export const setItemToPhase = (item: Item, phase: number) => {
-  const phaseData = getPhaseData(item, phase);
+export const setItemToPhase = (
+  item: Item,
+  phase: number,
+  properties: ItemProperty[],
+) => {
+  const phaseData = getPhaseData(item, phase, properties);
   if (phaseData) {
-    item.position = phaseData.position;
-    item.scale = phaseData.scale;
-    item.rotation = phaseData.rotation;
-    item.visible = phaseData.visible;
+    if (phaseData.position) item.position = phaseData.position;
+    if (phaseData.scale) item.scale = phaseData.scale;
+    if (phaseData.rotation !== undefined) item.rotation = phaseData.rotation;
+    if (phaseData.visible !== undefined) item.visible = phaseData.visible;
+    item = { ...item };
   } else console.log("bad phase data");
 };
 
-export const getPhaseData = (item: Item, phase: number): PhaseData | null => {
+export const getPhaseData = (
+  item: Item,
+  phase: number,
+  properties: ItemProperty[],
+): PhaseData | null => {
   const phaseData: unknown = item.metadata[getPhaseMetadataId(phase)];
-  if (!isPhaseData(phaseData)) return null;
-  else return phaseData;
+  if (!isPhaseData(phaseData, properties)) {
+    throw "error";
+    return null;
+  } else return phaseData;
 };
 
 export function isPhaseData(
-  potentialPhase: unknown
+  potentialPhase: unknown,
+  properties: ItemProperty[],
 ): potentialPhase is PhaseData {
   const phaseData = potentialPhase as PhaseData;
 
-  if (!isVector2(phaseData.position)) return false;
+  if (properties.includes("POSITION") && !isVector2(phaseData?.position))
+    return false;
 
-  if (!isVector2(phaseData.scale)) return false;
+  if (properties.includes("SCALE") && !isVector2(phaseData?.scale))
+    return false;
 
-  if (typeof phaseData.rotation !== "number") return false;
+  if (
+    properties.includes("ROTATION") &&
+    typeof phaseData?.rotation !== "number"
+  )
+    return false;
 
-  if (typeof phaseData.visible !== "boolean") return false;
+  if (properties.includes("VISIBLE") && typeof phaseData?.visible !== "boolean")
+    return false;
 
   return true;
 }
@@ -57,11 +88,4 @@ export function isVector2(vector2: unknown): vector2 is Vector2 {
   if (typeof test.y !== "number") return false;
 
   return true;
-}
-
-export interface PhaseData {
-  position: Vector2;
-  scale: Vector2;
-  rotation: number;
-  visible: boolean;
 }

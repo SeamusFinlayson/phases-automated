@@ -5,14 +5,14 @@ import {
   getPhaseMetadataId,
   setPhaseData,
   setItemToPhase,
+  isPhaseData,
 } from "../itemMetadataHelpers";
 import {
-  Automation,
   AUTOMATION_METADATA_ID,
   createAutomation,
-  ItemProperty,
   MAX_AUTOMATIONS,
 } from "../sceneMetadataHelpers";
+import { Automation, ItemProperty } from "../types";
 
 export type Action =
   | {
@@ -69,6 +69,10 @@ export function reducerWrapper(
     });
   }
   if (action.type === "currentPhaseChange") {
+    const automation =
+      state[
+        state.findIndex((automation) => automation.id === action.automationId)
+      ];
     OBR.scene.items.updateItems(
       (item) => {
         return (
@@ -80,10 +84,13 @@ export function reducerWrapper(
         items.forEach((item) => {
           const phaseData: unknown =
             item.metadata[getPhaseMetadataId(action.currentPhase)];
-          if (phaseData === undefined) {
-            setPhaseData(item, action.currentPhase);
+          console.log(phaseData);
+          if (!isPhaseData(phaseData, automation.properties)) {
+            console.log("set data");
+            setPhaseData(item, action.currentPhase, automation.properties);
           } else {
-            setItemToPhase(item, action.currentPhase);
+            console.log("item to phase");
+            setItemToPhase(item, action.currentPhase, automation.properties);
           }
         });
       },

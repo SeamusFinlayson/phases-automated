@@ -1,5 +1,6 @@
 import OBR, { Metadata } from "@owlbear-rodeo/sdk";
 import { getPluginId } from "./getPluginId";
+import { Automation } from "./types";
 
 export const AUTOMATION_METADATA_ID = "automations";
 export const AUTOMATION_CONTEXT_MENU_METADATA_ID = "contextMenuPhase";
@@ -20,25 +21,6 @@ export function createAutomation(
     totalPhases: totalPhases,
     properties: [],
   };
-}
-
-export type ItemProperty =
-  | "POSITION"
-  | "ROTATION"
-  | "SCALE"
-  | "VISIBLE"
-  | "LOCKED"
-  | "NAME"
-  | "Z_INDEX"
-  | "METADATA"
-  | "IMAGE_URL";
-
-export interface Automation {
-  id: string;
-  name: string;
-  currentPhase: number;
-  totalPhases: number;
-  properties: ItemProperty[];
 }
 
 export function isAutomation(

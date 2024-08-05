@@ -3,13 +3,13 @@ import { Button, Radio, useTheme } from "@mui/material";
 import { useEffect, useReducer, useState } from "react";
 import OBR from "@owlbear-rodeo/sdk";
 import {
-  Automation,
   getAutomationsFromSceneMetadata,
   NO_CONTEXT_MENU,
   getAutomationContextMenuFromScene,
   setAutomationContextMenu,
   getAutomationContextMenuFromSceneMetadata,
 } from "../sceneMetadataHelpers";
+import { Automation } from "../types";
 import AutomationElement from "./AutomationElement";
 import { MAX_AUTOMATIONS, reducerWrapper } from "./actionStateLogic";
 
@@ -26,7 +26,7 @@ export default function App({
 
   const [automations, dispatch] = useReducer(
     reducerWrapper,
-    initialAutomations
+    initialAutomations,
   );
   const [editing, setEditing] = useState(false);
   const [sceneReady, setSceneReady] = useState(initialSceneReady);
@@ -40,29 +40,29 @@ export default function App({
 
   useEffect(
     () =>
-      OBR.scene.onMetadataChange(metadata => {
+      OBR.scene.onMetadataChange((metadata) => {
         dispatch({
           type: "overwrite",
           automations: getAutomationsFromSceneMetadata(metadata),
         });
         setActiveAutomationContextMenu(
-          getAutomationContextMenuFromSceneMetadata(metadata)
+          getAutomationContextMenuFromSceneMetadata(metadata),
         );
       }),
-    []
+    [],
   );
 
   useEffect(
     () =>
-      OBR.scene.onReadyChange(ready => {
+      OBR.scene.onReadyChange((ready) => {
         setSceneReady(ready);
         if (ready) {
-          getAutomationContextMenuFromScene().then(value =>
-            setActiveAutomationContextMenu(value)
+          getAutomationContextMenuFromScene().then((value) =>
+            setActiveAutomationContextMenu(value),
           );
         }
       }),
-    []
+    [],
   );
 
   const automationElements: JSX.Element[] = [];
@@ -76,24 +76,24 @@ export default function App({
         index={i}
         radioChecked={activeAutomationContextMenu === automations[i].id}
         setRadioChecked={() => handleActiveContextMenu(automations[i].id)}
-      ></AutomationElement>
+      ></AutomationElement>,
     );
   }
 
   const sceneDependantElements = (
     <>
       <div className="flex flex-col">
-        <div className="p-2 dark:bg-white/0 rounded-[20px] flex flex-col outline outline-1 outline-black/10 dark:outline-white/10 gap-2">
+        <div className="flex flex-col gap-2 rounded-[20px] p-2 outline outline-1 outline-black/10 dark:bg-white/0 dark:outline-white/10">
           <div className="flex items-center">
             <Radio
               checked={activeAutomationContextMenu === NO_CONTEXT_MENU}
               onClick={() => handleActiveContextMenu(NO_CONTEXT_MENU)}
             ></Radio>
             <div>
-              <p className="text-left pt-0.5 text-black/[0.87] dark:text-white">
+              <p className="pt-0.5 text-left text-black/[0.87] dark:text-white">
                 No Context Menu
               </p>
-              <p className="text-left text-xs max-w-56 text-black/[0.6] dark:text-white/70">
+              <p className="max-w-56 text-left text-xs text-black/[0.6] dark:text-white/70">
                 To add items to an automation, select that automation.
               </p>
             </div>
@@ -123,8 +123,8 @@ export default function App({
 
   return (
     <div className={isDark ? "dark" : ""}>
-      <div className="flex h-screen flex-col p-3 gap-3 overflow-y-auto">
-        <h1 className="font-bold text-lg pl-1 text-black/[0.87] dark:text-white">
+      <div className="flex h-screen flex-col gap-3 overflow-y-auto p-3">
+        <h1 className="pl-1 text-lg font-bold text-black/[0.87] dark:text-white">
           Phases Automated
         </h1>
         {sceneReady && sceneDependantElements}

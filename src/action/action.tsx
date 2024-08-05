@@ -6,10 +6,10 @@ import { PluginThemeProvider } from "../PluginThemeProvider.tsx";
 import { CssBaseline } from "@mui/material";
 import OBR from "@owlbear-rodeo/sdk";
 import {
-  Automation,
   getAutomationsFromScene,
   getAutomationContextMenuFromScene,
 } from "../sceneMetadataHelpers.ts";
+import { Automation } from "../types.ts";
 
 OBR.onReady(async () => {
   let role = await OBR.player.getRole();
@@ -27,13 +27,13 @@ OBR.onReady(async () => {
   const root = ReactDOM.createRoot(document.getElementById("root")!);
   render();
 
-  OBR.player.onChange(player => {
+  OBR.player.onChange((player) => {
     role = player.role;
     setHeight();
     render();
   });
 
-  OBR.theme.onChange(theme => {
+  OBR.theme.onChange((theme) => {
     isDark = theme.mode === "DARK";
     if (role !== "GM") render();
   });
@@ -55,8 +55,8 @@ OBR.onReady(async () => {
             />
           ) : (
             <div className={isDark ? "dark" : ""}>
-              <div className="flex h-screen flex-col p-3 gap-3 overflow-y-auto">
-                <h1 className="font-bold text-lg pl-1 text-black/[0.87] dark:text-white">
+              <div className="flex h-screen flex-col gap-3 overflow-y-auto p-3">
+                <h1 className="pl-1 text-lg font-bold text-black/[0.87] dark:text-white">
                   Phases Automated
                 </h1>
                 <p className="pl-1 text-sm">GM Access Required</p>
@@ -64,7 +64,7 @@ OBR.onReady(async () => {
             </div>
           )}
         </PluginThemeProvider>
-      </React.StrictMode>
+      </React.StrictMode>,
     );
   }
 });

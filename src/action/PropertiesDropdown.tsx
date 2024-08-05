@@ -1,5 +1,5 @@
 import { Collapse, Checkbox, FormControlLabel } from "@mui/material";
-import { Automation, ItemProperty } from "../sceneMetadataHelpers";
+import { Automation, ItemProperty } from "../types";
 import { Action } from "./actionStateLogic";
 
 type CheckboxProperty = { displayName: string; property: ItemProperty };
