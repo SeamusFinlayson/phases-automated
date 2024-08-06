@@ -2,10 +2,8 @@ import OBR from "@owlbear-rodeo/sdk";
 import { getPluginId } from "../getPluginId";
 import {
   ITEM_AUTOMATION_METADATA_ID,
-  getPhaseMetadataId,
   setPhaseData,
   setItemToPhase,
-  isPhaseData,
 } from "../itemMetadataHelpers";
 import {
   AUTOMATION_METADATA_ID,
