@@ -5,11 +5,9 @@ import OBR from "@owlbear-rodeo/sdk";
 import {
   getAutomationsFromSceneMetadata,
   NO_CONTEXT_MENU,
-  getAutomationContextMenuFromScene,
   setAutomationContextMenu,
   getAutomationContextMenuFromSceneMetadata,
 } from "../sceneMetadataHelpers";
-import { Automation } from "../types";
 import AutomationElement from "./AutomationElement";
 import { MAX_AUTOMATIONS, reducerWrapper } from "./actionStateLogic";
 
