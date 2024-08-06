@@ -106,6 +106,7 @@ export default function App({}: {}) {
           onClick={() => {
             setEditing(!editing);
           }}
+          sx={{ width: 70 }}
         >
           {editing ? "Done" : "Edit"}
         </Button>

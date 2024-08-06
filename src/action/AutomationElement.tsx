@@ -82,11 +82,11 @@ export default function AutomationElement({
   return (
     <div className="relative">
       {editing && (
-        <div className="absolute bottom-0 left-0 right-0 top-0 z-10 h-full w-full rounded-[20px] bg-purple-300/85 dark:bg-purple-600/85">
+        <div className="absolute bottom-0 left-0 right-0 top-0 z-10 h-full w-full rounded-xl bg-purple-300/85 dark:bg-purple-600/85">
           <div className="flex h-full items-center justify-around">
             <div className="w-[40px]"></div>
             <button
-              className="rounded-2xl px-4 py-2 text-xl text-black/[0.87] duration-150 hover:bg-black/[0.045] dark:text-white dark:hover:bg-white/[0.08]"
+              className="rounded-lg px-4 py-2 text-xl text-black/[0.87] duration-150 hover:bg-black/[0.045] dark:text-white dark:hover:bg-white/[0.08]"
               onClick={() => {
                 dispatch({
                   type: "deleteAutomation",
@@ -97,7 +97,7 @@ export default function AutomationElement({
               {"delete"}
             </button>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <IconButton
                 onClick={() =>
                   dispatch({
@@ -126,7 +126,7 @@ export default function AutomationElement({
       )}
       <div
         className={
-          "flex flex-col rounded-xl bg-purple-100/30 outline outline-1 outline-black/10 dark:bg-slate-100/5 dark:outline-white/10"
+          "flex flex-col rounded-xl bg-purple-100/30 outline outline-1 -outline-offset-1 outline-black/10 dark:bg-slate-100/5 dark:outline-white/10"
         }
       >
         <div className="flex items-center rounded-t-xl bg-purple-100/30 pl-2 dark:bg-slate-950/30">
