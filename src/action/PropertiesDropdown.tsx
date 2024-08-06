@@ -19,10 +19,10 @@ export default function PropertiesDropdown({
     { displayName: "Scale", property: "SCALE" },
     { displayName: "Visible", property: "VISIBLE" },
     // { displayName: "Locked", property: "LOCKED" },
+    // { displayName: "Image", property: "IMAGE_URL" },
     // { displayName: "Name", property: "NAME" },
     // { displayName: "Z-Index", property: "Z_INDEX" },
     // { displayName: "Metadata", property: "METADATA" },
-    // { displayName: "Image URL", property: "IMAGE_URL" },
   ];
 
   return (

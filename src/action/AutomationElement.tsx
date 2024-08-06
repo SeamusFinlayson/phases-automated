@@ -3,10 +3,13 @@ import {
   IconButton,
   Radio,
   ToggleButtonGroup,
-  // Button,
+  Button,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { MAXIMUM_PHASES } from "../itemMetadataHelpers";
+import {
+  ITEM_AUTOMATION_METADATA_ID,
+  MAXIMUM_PHASES,
+} from "../itemMetadataHelpers";
 import { MINIMUM_PHASES } from "../sceneMetadataHelpers";
 import { Automation } from "../types";
 import PropertiesDropdown from "./PropertiesDropdown";
@@ -17,7 +20,9 @@ import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
 import ArrowDownwardRoundedIcon from "@mui/icons-material/ArrowDownwardRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 import { Action } from "./actionStateLogic";
-// import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import OBR, { Item } from "@owlbear-rodeo/sdk";
+import { getPluginId } from "../getPluginId";
 
 export default function AutomationElement({
   automation,
@@ -36,6 +41,21 @@ export default function AutomationElement({
 }): JSX.Element {
   const [name, setName] = useState(automation.name);
   const [expanded, setExpanded] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+
+  useEffect(() => {
+    const updateItemCount = (items: Item[]) => {
+      setItemCount(
+        items.filter(
+          (item) =>
+            automation.id ===
+            item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)],
+        ).length,
+      );
+    };
+    OBR.scene.items.getItems().then(updateItemCount);
+    return OBR.scene.items.onChange(updateItemCount);
+  }, []);
 
   useEffect(() => setName(automation.name), [automation.name]);
 
@@ -176,7 +196,22 @@ export default function AutomationElement({
                 <AddCircleRoundedIcon></AddCircleRoundedIcon>
               </IconButton>
             </div>
-            {/* <Button startIcon={<SearchRoundedIcon></SearchRoundedIcon>}>21 Items</Button> */}
+            <Button
+              onClick={async () => {
+                const automationItems = await OBR.scene.items.getItems(
+                  (item) =>
+                    automation.id ===
+                    item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)],
+                );
+                OBR.player.select(
+                  automationItems.map((item) => item.id),
+                  true,
+                );
+              }}
+              startIcon={<SearchRoundedIcon></SearchRoundedIcon>}
+            >
+              {`${itemCount} Items`}
+            </Button>
             <IconButton
               onClick={() =>
                 expanded ? setExpanded(false) : setExpanded(true)
