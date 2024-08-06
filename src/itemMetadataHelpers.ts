@@ -1,4 +1,4 @@
-import { Item, Vector2 } from "@owlbear-rodeo/sdk";
+import { isImage, Item, Vector2 } from "@owlbear-rodeo/sdk";
 import { getPluginId } from "./getPluginId";
 import { ItemProperty } from "./types";
 
@@ -7,6 +7,8 @@ interface PhaseData {
   scale: Vector2 | undefined;
   rotation: number | undefined;
   visible: boolean | undefined;
+  locked: boolean | undefined;
+  imageUrl: string | null | undefined;
 }
 
 export const ITEM_AUTOMATION_METADATA_ID = "automationId";
@@ -27,6 +29,8 @@ export const setPhaseData = (
   const storedScale = getPhaseData(item, phase, ["SCALE"])?.scale;
   const storedRotation = getPhaseData(item, phase, ["ROTATION"])?.rotation;
   const storedVisible = getPhaseData(item, phase, ["VISIBLE"])?.visible;
+  const storedLocked = getPhaseData(item, phase, ["LOCKED"])?.locked;
+  const storedImageUrl = getPhaseData(item, phase, ["IMAGE_URL"])?.imageUrl;
 
   item.metadata[getPhaseMetadataId(phase)] = {
     ...(properties.includes("POSITION")
@@ -49,6 +53,16 @@ export const setPhaseData = (
         ? { visible: storedVisible }
         : { visible: item.visible }
       : {}),
+    ...(properties.includes("LOCKED")
+      ? preventOverwrite && storedLocked !== undefined
+        ? { locked: storedLocked }
+        : { locked: item.locked }
+      : {}),
+    ...(properties.includes("IMAGE_URL")
+      ? preventOverwrite && storedImageUrl !== undefined
+        ? { imageUrl: storedImageUrl }
+        : { imageUrl: isImage(item) ? item.image.url : null }
+      : {}),
   };
 };
 
@@ -58,11 +72,15 @@ export const setItemToPhase = (
   properties: ItemProperty[],
 ) => {
   const phaseData = getPhaseData(item, phase, properties);
+  console.log(phaseData?.locked);
   if (phaseData) {
     if (phaseData.position) item.position = phaseData.position;
     if (phaseData.scale) item.scale = phaseData.scale;
     if (phaseData.rotation !== undefined) item.rotation = phaseData.rotation;
     if (phaseData.visible !== undefined) item.visible = phaseData.visible;
+    if (phaseData.locked !== undefined) item.locked = phaseData.locked;
+    if (typeof phaseData.imageUrl === "string" && isImage(item))
+      item.image.url = phaseData.imageUrl;
     item = { ...item };
   } else console.log("bad phase data");
 };
@@ -97,6 +115,16 @@ export function isPhaseData(
     return false;
 
   if (properties.includes("VISIBLE") && typeof phaseData?.visible !== "boolean")
+    return false;
+
+  if (properties.includes("LOCKED") && typeof phaseData?.locked !== "boolean")
+    return false;
+
+  if (
+    properties.includes("IMAGE_URL") &&
+    typeof phaseData?.imageUrl !== "string" &&
+    typeof phaseData?.imageUrl !== "object" // TODO: checking if the type is object is not a sufficient check for null, null is a valid value
+  )
     return false;
 
   return true;

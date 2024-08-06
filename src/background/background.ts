@@ -1,4 +1,4 @@
-import OBR, { Item } from "@owlbear-rodeo/sdk";
+import OBR, { isImage, Item } from "@owlbear-rodeo/sdk";
 import {
   getAutomationsFromScene,
   getAutomationsFromSceneMetadata,
@@ -71,10 +71,15 @@ OBR.onReady(async () => {
           (item.automation.properties.includes("ROTATION") &&
             item.item.rotation !== phaseData.rotation) ||
           (item.automation.properties.includes("VISIBLE") &&
-            item.item.visible !== phaseData.visible))
+            item.item.visible !== phaseData.visible) ||
+          (item.automation.properties.includes("LOCKED") &&
+            item.item.locked !== phaseData.locked) ||
+          (item.automation.properties.includes("IMAGE_URL") &&
+            isImage(item.item) &&
+            item.item.image.url !== phaseData.imageUrl))
       );
     });
-    // console.log("length of changed items", changedItems.length);
+    console.log("length of changed items", changedItems.length);
     OBR.scene.items.updateItems(
       changedItems.map((item) => item.item),
       (items) => {
