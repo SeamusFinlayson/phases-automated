@@ -79,7 +79,7 @@ OBR.onReady(async () => {
             item.item.image.url !== phaseData.imageUrl))
       );
     });
-    console.log("length of changed items", changedItems.length);
+    // console.log("length of changed items", changedItems.length);
     OBR.scene.items.updateItems(
       changedItems.map((item) => item.item),
       (items) => {

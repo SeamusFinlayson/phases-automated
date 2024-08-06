@@ -72,7 +72,6 @@ export const setItemToPhase = (
   properties: ItemProperty[],
 ) => {
   const phaseData = getPhaseData(item, phase, properties);
-  console.log(phaseData?.locked);
   if (phaseData) {
     if (phaseData.position) item.position = phaseData.position;
     if (phaseData.scale) item.scale = phaseData.scale;
