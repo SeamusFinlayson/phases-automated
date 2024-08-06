@@ -5,24 +5,11 @@ import "./index.css";
 import { PluginThemeProvider } from "../PluginThemeProvider.tsx";
 import { CssBaseline } from "@mui/material";
 import OBR from "@owlbear-rodeo/sdk";
-import {
-  getAutomationsFromScene,
-  getAutomationContextMenuFromScene,
-} from "../sceneMetadataHelpers.ts";
-import { Automation } from "../types.ts";
 
 OBR.onReady(async () => {
   let role = await OBR.player.getRole();
   let isDark = (await OBR.theme.getTheme()).mode === "DARK";
   setHeight();
-
-  let initialAutomations: Automation[] = [];
-  let initialPhaseContextMenu: string = "";
-  const initialSceneReady = await OBR.scene.isReady();
-  if (initialSceneReady) {
-    initialAutomations = await getAutomationsFromScene();
-    initialPhaseContextMenu = await getAutomationContextMenuFromScene();
-  }
 
   const root = ReactDOM.createRoot(document.getElementById("root")!);
   render();
@@ -48,11 +35,7 @@ OBR.onReady(async () => {
         <PluginThemeProvider>
           <CssBaseline />
           {role === "GM" ? (
-            <App
-              initialAutomations={initialAutomations}
-              initialSceneReady={initialSceneReady}
-              initialPhaseContextMenu={initialPhaseContextMenu}
-            />
+            <App />
           ) : (
             <div className={isDark ? "dark" : ""}>
               <div className="flex h-screen flex-col gap-3 overflow-y-auto p-3">

@@ -126,10 +126,10 @@ export default function AutomationElement({
       )}
       <div
         className={
-          "flex flex-col rounded-xl outline outline-1 outline-black/10 dark:bg-slate-300/10 dark:outline-none"
+          "flex flex-col rounded-xl bg-purple-100/30 outline outline-1 outline-black/10 dark:bg-slate-100/5 dark:outline-white/10"
         }
       >
-        <div className="flex items-center rounded-t-xl bg-purple-100/15 pl-2 dark:bg-black/35">
+        <div className="flex items-center rounded-t-xl bg-purple-100/30 pl-2 dark:bg-slate-950/30">
           <Radio
             checked={radioChecked}
             onClick={() => setRadioChecked(automation.id)}

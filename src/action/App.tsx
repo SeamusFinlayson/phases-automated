@@ -13,25 +13,14 @@ import { Automation } from "../types";
 import AutomationElement from "./AutomationElement";
 import { MAX_AUTOMATIONS, reducerWrapper } from "./actionStateLogic";
 
-export default function App({
-  initialAutomations,
-  initialSceneReady,
-  initialPhaseContextMenu,
-}: {
-  initialAutomations: Automation[];
-  initialSceneReady: boolean;
-  initialPhaseContextMenu: string;
-}) {
+export default function App({}: {}) {
   const isDark = useTheme().palette.mode === "dark";
 
-  const [automations, dispatch] = useReducer(
-    reducerWrapper,
-    initialAutomations,
-  );
+  const [automations, dispatch] = useReducer(reducerWrapper, []);
   const [editing, setEditing] = useState(false);
-  const [sceneReady, setSceneReady] = useState(initialSceneReady);
+  const [sceneReady, setSceneReady] = useState(false);
   const [activeAutomationContextMenu, setActiveAutomationContextMenu] =
-    useState(initialPhaseContextMenu);
+    useState(NO_CONTEXT_MENU);
 
   const handleActiveContextMenu = (id: string) => {
     setActiveAutomationContextMenu(id);
@@ -52,18 +41,23 @@ export default function App({
     [],
   );
 
-  useEffect(
-    () =>
-      OBR.scene.onReadyChange((ready) => {
-        setSceneReady(ready);
-        if (ready) {
-          getAutomationContextMenuFromScene().then((value) =>
-            setActiveAutomationContextMenu(value),
-          );
-        }
-      }),
-    [],
-  );
+  useEffect(() => {
+    const handleSceneReadyChange = async (ready: boolean) => {
+      setSceneReady(ready);
+      if (ready) {
+        const sceneMetadata = await OBR.scene.getMetadata();
+        setAutomationContextMenu(
+          getAutomationContextMenuFromSceneMetadata(sceneMetadata),
+        );
+        dispatch({
+          type: "overwrite",
+          automations: getAutomationsFromSceneMetadata(sceneMetadata),
+        });
+      }
+    };
+    OBR.scene.isReady().then(handleSceneReadyChange);
+    return OBR.scene.onReadyChange(handleSceneReadyChange);
+  }, []);
 
   const automationElements: JSX.Element[] = [];
   for (let i = 0; i < automations.length; i++) {
