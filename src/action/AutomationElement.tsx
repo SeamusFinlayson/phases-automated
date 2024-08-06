@@ -39,7 +39,6 @@ export default function AutomationElement({
 
   useEffect(() => setName(automation.name), [automation.name]);
 
-  const buttonHeight = 40;
   const phaseButtons: JSX.Element[] = [];
 
   for (let i = 1; i <= automation.totalPhases; i++) {
