@@ -83,7 +83,7 @@ export default function App({
   const sceneDependantElements = (
     <>
       <div className="flex flex-col">
-        <div className="flex flex-col gap-2 rounded-[20px] p-2 outline outline-1 outline-black/10 dark:bg-white/0 dark:outline-white/10">
+        <div className="flex flex-col gap-2 rounded-xl p-2 outline outline-1 outline-black/10 dark:bg-white/0 dark:outline-white/10">
           <div className="flex items-center">
             <Radio
               checked={activeAutomationContextMenu === NO_CONTEXT_MENU}

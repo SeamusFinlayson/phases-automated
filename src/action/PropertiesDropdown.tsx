@@ -27,9 +27,9 @@ export default function PropertiesDropdown({
 
   return (
     <Collapse in={expanded} timeout={"auto"} unmountOnExit>
-      <div className="pt-2">
+      <div className="py-1">
         <div
-          className={`justify-center rounded-2xl pl-2 outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10`}
+          className={`justify-center rounded-lg pl-2 outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10`}
         >
           <div className="px-1">
             <h2 className="pb-1 pt-3">Automated Properties</h2>

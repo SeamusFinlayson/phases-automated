@@ -107,17 +107,17 @@ export default function AutomationElement({
       )}
       <div
         className={
-          "flex flex-col rounded-[20px] bg-rose-200/30 p-2 outline outline-1 outline-black/10 dark:bg-slate-300/10 dark:outline-none"
+          "flex flex-col rounded-xl outline outline-1 outline-black/10 dark:bg-slate-300/10 dark:outline-none"
         }
       >
-        <div className="flex items-center">
+        <div className="flex items-center rounded-t-xl bg-purple-100/15 pl-2 dark:bg-black/35">
           <Radio
             checked={radioChecked}
             onClick={() => setRadioChecked(automation.id)}
           ></Radio>
           <input
             className={
-              "h-10 w-full shrink grow rounded-2xl bg-purple-300/15 px-2 text-black/[0.87] outline-none outline outline-1 outline-offset-0 outline-black/10 duration-75 focus:bg-purple-300/35 dark:bg-black/20 dark:text-white dark:outline-none dark:focus:bg-black/35"
+              "h-10 w-full shrink grow rounded-2xl bg-transparent px-2 text-black/[0.87] placeholder-black/25 outline-none duration-75 dark:text-white dark:placeholder-white/30 dark:outline-none"
             }
             placeholder={`Automation ${index + 1}`}
             value={name}
@@ -134,19 +134,19 @@ export default function AutomationElement({
           ></input>
         </div>
 
-        <div className="py-2">
-          <ToggleButtonGroup
-            color="primary"
-            value={automation.currentPhase.toString()}
-            exclusive
-            sx={{ height: buttonHeight }}
-            fullWidth
-          >
-            {phaseButtons}
-          </ToggleButtonGroup>
-        </div>
-        <div className="flex flex-wrap-reverse justify-between gap-2">
-          <div className="flex grow justify-between">
+        <div className="p-2 pb-1">
+          <div className="pt-0">
+            <ToggleButtonGroup
+              color="primary"
+              value={automation.currentPhase.toString()}
+              size="small"
+              exclusive
+              fullWidth
+            >
+              {phaseButtons}
+            </ToggleButtonGroup>
+          </div>
+          <div className="flex grow justify-between pt-1">
             <div>
               <IconButton
                 onClick={() =>
@@ -188,12 +188,12 @@ export default function AutomationElement({
               ></ExpandMoreRoundedIcon>
             </IconButton>
           </div>
+          <PropertiesDropdown
+            expanded={expanded}
+            dispatch={dispatch}
+            automation={automation}
+          ></PropertiesDropdown>
         </div>
-        <PropertiesDropdown
-          expanded={expanded}
-          dispatch={dispatch}
-          automation={automation}
-        ></PropertiesDropdown>
       </div>
     </div>
   );
