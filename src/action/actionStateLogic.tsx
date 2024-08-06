@@ -62,13 +62,16 @@ export function reducerWrapper(
   state: Automation[],
   action: Action,
 ): Automation[] {
-  const reducerResult = reducer(state, action);
+  state = reducer(state, action);
   if (action.type !== "overwrite") {
     OBR.scene.setMetadata({
-      [getPluginId(AUTOMATION_METADATA_ID)]: reducerResult,
+      [getPluginId(AUTOMATION_METADATA_ID)]: state,
     });
   }
-  if (action.type === "currentPhaseChange") {
+  if (
+    action.type === "currentPhaseChange" ||
+    action.type === "updateAutomatedProperties"
+  ) {
     const automation =
       state[
         state.findIndex((automation) => automation.id === action.automationId)
@@ -82,21 +85,20 @@ export function reducerWrapper(
       },
       (items) => {
         items.forEach((item) => {
-          const phaseData: unknown =
-            item.metadata[getPhaseMetadataId(action.currentPhase)];
-          console.log(phaseData);
-          if (!isPhaseData(phaseData, automation.properties)) {
-            console.log("set data");
-            setPhaseData(item, action.currentPhase, automation.properties);
-          } else {
-            console.log("item to phase");
-            setItemToPhase(item, action.currentPhase, automation.properties);
-          }
+          // Create phase data for new phase properties and remove deleted properties
+          setPhaseData(
+            item,
+            automation.currentPhase,
+            automation.properties,
+            true,
+          );
+          // Update item based on new phase and automated property changes
+          setItemToPhase(item, automation.currentPhase, automation.properties);
         });
       },
     );
   }
-  return reducerResult;
+  return state;
 }
 
 /** Reducer update logic */

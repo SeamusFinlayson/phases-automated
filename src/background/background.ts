@@ -56,10 +56,10 @@ OBR.onReady(async () => {
         item.automation.currentPhase,
         item.automation.properties,
       );
-      // console.log("itemitem position", item.item.position);
+      // console.log("item item position", item.item.position);
       // console.log("phase data", phaseData);
       // console.log(item.automation.properties.includes("POSITION"));
-      console.log(item.item.visible, phaseData?.visible);
+      // console.log(item.item.visible, phaseData?.visible);
       return (
         phaseData !== null &&
         ((item.automation.properties.includes("POSITION") &&
@@ -74,7 +74,7 @@ OBR.onReady(async () => {
             item.item.visible !== phaseData.visible))
       );
     });
-    console.log("length", changedItems.length);
+    // console.log("length of changed items", changedItems.length);
     OBR.scene.items.updateItems(
       changedItems.map((item) => item.item),
       (items) => {

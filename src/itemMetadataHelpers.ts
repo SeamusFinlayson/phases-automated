@@ -19,13 +19,36 @@ export const setPhaseData = (
   item: Item,
   phase: number,
   properties: ItemProperty[],
+  preventOverwrite: boolean = false,
 ) => {
   if (typeof phase !== "number") throw "Error: expected type number";
+  //Add properties if they do not already exist
+  const storedPosition = getPhaseData(item, phase, ["POSITION"])?.position;
+  const storedScale = getPhaseData(item, phase, ["SCALE"])?.scale;
+  const storedRotation = getPhaseData(item, phase, ["ROTATION"])?.rotation;
+  const storedVisible = getPhaseData(item, phase, ["VISIBLE"])?.visible;
+
   item.metadata[getPhaseMetadataId(phase)] = {
-    position: properties.includes("POSITION") ? item.position : undefined,
-    scale: properties.includes("SCALE") ? item.scale : undefined,
-    rotation: properties.includes("ROTATION") ? item.rotation : undefined,
-    visible: properties.includes("VISIBLE") ? item.visible : undefined,
+    ...(properties.includes("POSITION")
+      ? preventOverwrite && storedPosition !== undefined
+        ? { position: storedPosition }
+        : { position: item.position }
+      : {}),
+    ...(properties.includes("SCALE")
+      ? preventOverwrite && storedScale !== undefined
+        ? { scale: storedScale }
+        : { scale: item.scale }
+      : {}),
+    ...(properties.includes("ROTATION")
+      ? preventOverwrite && storedRotation !== undefined
+        ? { rotation: storedRotation }
+        : { rotation: item.rotation }
+      : {}),
+    ...(properties.includes("VISIBLE")
+      ? preventOverwrite && storedVisible !== undefined
+        ? { visible: storedVisible }
+        : { visible: item.visible }
+      : {}),
   };
 };
 
@@ -51,7 +74,6 @@ export const getPhaseData = (
 ): PhaseData | null => {
   const phaseData: unknown = item.metadata[getPhaseMetadataId(phase)];
   if (!isPhaseData(phaseData, properties)) {
-    throw "error";
     return null;
   } else return phaseData;
 };

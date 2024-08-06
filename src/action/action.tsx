@@ -39,7 +39,7 @@ OBR.onReady(async () => {
   });
 
   function setHeight() {
-    OBR.action.setHeight(role === "GM" ? 500 : 100);
+    OBR.action.setHeight(role === "GM" ? 700 : 100);
   }
 
   function render() {
