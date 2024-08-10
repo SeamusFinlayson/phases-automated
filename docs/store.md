@@ -1,10 +1,18 @@
+---
+title: Phases Automated
+description: Build encounters with complex automations managed through a simple menu
+author: Seamus Finlayson
+image: https://github.com/user-attachments/assets/82a1294e-847c-499c-becf-0067a23699fa
+icon: https://phases-automated.onrender.com/icon.svg
+tags:
+  - automation
+manifest: https://phases-automated.onrender.com/manifest.json
+learn-more: https://github.com/SeamusFinlayson/Phases-Automated
+---
+
 # Phases Automated
 
-![Phases Automated Header](https://github.com/user-attachments/assets/82a1294e-847c-499c-becf-0067a23699fa)
-
 _Build encounters with complex automations managed through a simple menu_
-
-Install link: https://phases-automated.onrender.com/manifest.json
 
 ## How It Works
 
@@ -30,29 +38,3 @@ I may accept feature requests but - as I have limited time and development plans
 If you need support for this extension you can message me in the [Owlbear Rodeo Discord](https://discord.gg/yWSErB6Qaj) @Seamus or open an issue on [GitHub](https://github.com/SeamusFinlayson/Phases-Automated).
 
 If you like using this extension consider [supporting me on Patreon](https://www.patreon.com/SeamusFinlayson) where paid members can request features. You can also follow along there as a free member for updates.
-
-## Building
-
-This project uses [pnpm](https://pnpm.io/) as a package manager.
-
-To install all the dependencies run:
-
-`pnpm install`
-
-To run in a development mode run:
-
-`pnpm dev`
-
-To make a production build run:
-
-`pnpm build`
-
-## License
-
-GNU GPLv3
-
-## Contributing
-
-Copyright (C) 2023 Owlbear Rodeo
-
-Copyright (C) 2023 Seamus Finlayson
