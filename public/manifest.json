@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "manifest_version": 1,
   "author": "Seamus Finlayson",
-  "homepage_url": "https://github.com/SeamusFinlayson",
+  "homepage_url": "https://github.com/SeamusFinlayson/phases-automated",
   "icon": "/icon.svg",
-  "description": "Phase automation tool",
+  "description": "Build encounters with complex automations managed through a simple menu",
   "action": {
     "title": "Phases Automated",
     "icon": "/iconNoFill.svg",
