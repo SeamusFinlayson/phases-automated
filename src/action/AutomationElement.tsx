@@ -1,10 +1,4 @@
-import {
-  ToggleButton,
-  IconButton,
-  Radio,
-  ToggleButtonGroup,
-  Button,
-} from "@mui/material";
+import { ToggleButton, IconButton, Radio, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import {
   ITEM_AUTOMATION_METADATA_ID,
@@ -23,6 +17,7 @@ import { Action } from "./actionStateLogic";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import OBR, { Item } from "@owlbear-rodeo/sdk";
 import { getPluginId } from "../getPluginId";
+import PhaseButtonGroup from "./PhaseButtonGroup";
 
 export default function AutomationElement({
   automation,
@@ -82,7 +77,7 @@ export default function AutomationElement({
   return (
     <div className="relative">
       {editing && (
-        <div className="absolute bottom-0 left-0 right-0 top-0 z-10 h-full w-full rounded-xl bg-purple-300/85 dark:bg-purple-600/85">
+        <div className="bg-primary/85 dark:bg-primary-dark/85 absolute bottom-0 left-0 right-0 top-0 z-10 h-full w-full rounded-xl">
           <div className="flex h-full items-center justify-around">
             <div className="w-[40px]"></div>
             <button
@@ -153,19 +148,8 @@ export default function AutomationElement({
           ></input>
         </div>
 
-        <div className="p-2 pb-1">
-          <div className="pt-0">
-            <ToggleButtonGroup
-              color="primary"
-              value={automation.currentPhase.toString()}
-              size="small"
-              exclusive
-              fullWidth
-            >
-              {phaseButtons}
-            </ToggleButtonGroup>
-          </div>
-          <div className="flex grow justify-between pt-1">
+        <div className="p-2 py-1">
+          <div className="flex grow justify-between">
             <div>
               <IconButton
                 onClick={() =>
@@ -222,12 +206,14 @@ export default function AutomationElement({
               ></ExpandMoreRoundedIcon>
             </IconButton>
           </div>
-          <PropertiesDropdown
-            expanded={expanded}
-            dispatch={dispatch}
-            automation={automation}
-          ></PropertiesDropdown>
         </div>
+        <PropertiesDropdown
+          expanded={expanded}
+          dispatch={dispatch}
+          automation={automation}
+        ></PropertiesDropdown>
+
+        <PhaseButtonGroup automation={automation} dispatch={dispatch} />
       </div>
     </div>
   );

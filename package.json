@@ -15,8 +15,10 @@
     "@mui/icons-material": "^5.16.6",
     "@mui/material": "^5.16.6",
     "@owlbear-rodeo/sdk": "^2.4.0",
+    "clsx": "^2.1.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
     "@types/node": "^22.1.0",
