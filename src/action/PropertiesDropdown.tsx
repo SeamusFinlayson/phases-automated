@@ -27,19 +27,17 @@ export default function PropertiesDropdown({
 
   return (
     <Collapse in={expanded} timeout={"auto"} unmountOnExit>
-      <div className="py-1">
-        <div
-          className={`justify-center rounded-lg pl-2 outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10`}
-        >
-          <div className="px-1">
-            <h2 className="pb-1 pt-3">Automated Properties</h2>
-            <div className="columns-2 pb-2">
-              <Properties
-                properties={checkboxProperties}
-                dispatch={dispatch}
-                automation={automation}
-              ></Properties>
-            </div>
+      <div
+        className={`justify-center border-t border-black/10 pl-2 dark:border-white/10`}
+      >
+        <div className="px-2">
+          <h2 className="pb-1 pt-3">Automated Properties</h2>
+          <div className="columns-2 pb-2">
+            <Properties
+              properties={checkboxProperties}
+              dispatch={dispatch}
+              automation={automation}
+            ></Properties>
           </div>
         </div>
       </div>

@@ -12,7 +12,7 @@ interface PhaseData {
 }
 
 export const ITEM_AUTOMATION_METADATA_ID = "automationId";
-export const MAXIMUM_PHASES = 8;
+export const MAXIMUM_PHASES = 18;
 
 export const getPhaseMetadataId = (phase: number) =>
   getPluginId(`phase${phase}`);

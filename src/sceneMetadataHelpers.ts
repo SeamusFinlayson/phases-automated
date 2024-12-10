@@ -6,7 +6,7 @@ export const AUTOMATION_METADATA_ID = "automations";
 export const AUTOMATION_CONTEXT_MENU_METADATA_ID = "contextMenuPhase";
 export const NO_CONTEXT_MENU = "none";
 
-export const MAX_AUTOMATIONS = 8;
+export const MAX_AUTOMATIONS = 16;
 export const MINIMUM_PHASES = 2;
 
 export function createAutomation(
