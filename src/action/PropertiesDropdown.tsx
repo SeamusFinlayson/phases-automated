@@ -1,6 +1,5 @@
 import { Collapse, Checkbox, FormControlLabel } from "@mui/material";
-import { Automation, ItemProperty } from "../types";
-import { Action } from "./actionStateLogic";
+import { Automation, ItemProperty, ReducerAction } from "../types";
 
 type CheckboxProperty = { displayName: string; property: ItemProperty };
 
@@ -10,7 +9,7 @@ export default function PropertiesDropdown({
   automation,
 }: {
   expanded: boolean;
-  dispatch: React.Dispatch<Action>;
+  dispatch: React.Dispatch<ReducerAction>;
   automation: Automation;
 }): JSX.Element {
   const checkboxProperties: CheckboxProperty[] = [
@@ -51,7 +50,7 @@ function Properties({
   automation,
 }: {
   properties: CheckboxProperty[];
-  dispatch: React.Dispatch<Action>;
+  dispatch: React.Dispatch<ReducerAction>;
   automation: Automation;
 }): JSX.Element[] {
   return properties.map((checkbox) => (

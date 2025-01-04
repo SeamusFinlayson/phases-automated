@@ -1,64 +1,17 @@
 import OBR from "@owlbear-rodeo/sdk";
 import { getPluginId } from "../getPluginId";
 import {
-  ITEM_AUTOMATION_METADATA_ID,
-  setPhaseData,
-  setItemToPhase,
-} from "../itemMetadataHelpers";
-import {
   AUTOMATION_METADATA_ID,
   createAutomation,
   MAX_AUTOMATIONS,
 } from "../sceneMetadataHelpers";
-import { Automation, ItemProperty } from "../types";
+import { Automation, ReducerAction } from "../types";
+import { changePhase } from "../changePhase";
 
-export type Action =
-  | {
-      type: "overwrite";
-      automations: Automation[];
-    }
-  | {
-      type: "addAutomation";
-    }
-  | {
-      type: "deleteAutomation";
-      automationId: string;
-    }
-  | {
-      type: "moveUp";
-      automationId: string;
-      index: number;
-    }
-  | {
-      type: "moveDown";
-      automationId: string;
-      index: number;
-    }
-  | {
-      type: "nameChange";
-      automationId: string;
-      name: string;
-    }
-  | {
-      type: "currentPhaseChange";
-      automationId: string;
-      currentPhase: number;
-    }
-  | {
-      type: "totalPhasesChange";
-      automationId: string;
-      totalPhases: number;
-    }
-  | {
-      type: "updateAutomatedProperties";
-      automationId: string;
-      newProperties: ItemProperty[];
-    };
-
-/** Other code execution dependant on reducer updates, should only use async functions w/o await to not block state updates */
+/** Other code execution dependant on reducer updates, should only use await to not block state updates */
 export function reducerWrapper(
   state: Automation[],
-  action: Action,
+  action: ReducerAction,
 ): Automation[] {
   state = reducer(state, action);
   if (action.type !== "overwrite") {
@@ -70,37 +23,17 @@ export function reducerWrapper(
     action.type === "currentPhaseChange" ||
     action.type === "updateAutomatedProperties"
   ) {
-    const automation =
-      state[
-        state.findIndex((automation) => automation.id === action.automationId)
-      ];
-    OBR.scene.items.updateItems(
-      (item) => {
-        return (
-          item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)] ===
-          action.automationId
-        );
-      },
-      (items) => {
-        items.forEach((item) => {
-          // Create phase data for new phase properties and remove deleted properties
-          setPhaseData(
-            item,
-            automation.currentPhase,
-            automation.properties,
-            true,
-          );
-          // Update item based on new phase and automated property changes
-          setItemToPhase(item, automation.currentPhase, automation.properties);
-        });
-      },
+    const automation = state.find(
+      (automation) => automation.id === action.automationId,
     );
+    if (automation === undefined) throw new Error("Could not find automation");
+    changePhase(automation, automation.currentPhase);
   }
   return state;
 }
 
 /** Reducer update logic */
-function reducer(state: Automation[], action: Action): Automation[] {
+function reducer(state: Automation[], action: ReducerAction): Automation[] {
   switch (action.type) {
     case "overwrite":
       return action.automations;

@@ -1,11 +1,17 @@
-import OBR, { isImage, Item } from "@owlbear-rodeo/sdk";
+import OBR, {
+  buildLabel,
+  buildShape,
+  isImage,
+  Item,
+  Math2,
+} from "@owlbear-rodeo/sdk";
 import {
   getAutomationsFromScene,
   getAutomationsFromSceneMetadata,
   getAutomationContextMenuFromScene,
   getAutomationContextMenuFromSceneMetadata,
   NO_CONTEXT_MENU,
-  setAutomationContextMenu,
+  AUTOMATION_METADATA_ID,
 } from "../sceneMetadataHelpers";
 import { Automation } from "../types";
 import { getPluginId } from "../getPluginId";
@@ -14,40 +20,81 @@ import {
   getPhaseMetadataId,
   ITEM_AUTOMATION_METADATA_ID,
   MAXIMUM_PHASES,
+  PHASE_CHANGE_BUTTON_METADATA_ID,
   setPhaseData,
 } from "../itemMetadataHelpers";
+import { changePhase } from "../changePhase";
 
 const menuIcon = new URL(
   "../assets/iconNoFill.svg#icon",
   import.meta.url,
 ).toString();
 
-const ADD_MENU_ID = "addToAutomation";
-const REMOVE_MENU_ID = "removeFromAutomation";
+const ADD_MENU_ID = getPluginId("addToAutomation");
+const REMOVE_MENU_ID = getPluginId("removeFromAutomation");
 
-let automationContextMenu = NO_CONTEXT_MENU;
 let automations: Automation[] = [];
+let activeAutomationId: string = NO_CONTEXT_MENU;
+let phaseChangeButtons: PhaseChangeButton[] = [];
 
 OBR.onReady(async () => {
-  init();
-  OBR.scene.onMetadataChange((metadata) => {
-    automationContextMenu = getAutomationContextMenuFromSceneMetadata(metadata);
-    automations = getAutomationsFromSceneMetadata(metadata);
-    createContextMenu();
+  readySceneDependents();
+  handleMetadataChanges();
+  handleItemsChanges();
+  handleSelectionChanges();
+});
+
+function handleSelectionChanges() {
+  OBR.player.onChange(async (player) => {
+    if (player.selection && player.selection.length === 1) {
+      const firstItem = player.selection[0];
+      if (
+        phaseChangeButtons
+          .map((phaseButton) => phaseButton.buttonItemId)
+          .includes(firstItem)
+      ) {
+        OBR.player.deselect();
+
+        const items = await OBR.scene.items.getItems(
+          (item) => item.id === firstItem,
+        );
+        if (items.length !== 1)
+          throw new Error("Phase change button not found");
+        const phaseChangeButtonItem = items[0];
+        const automationId =
+          phaseChangeButtonItem.metadata[PHASE_CHANGE_BUTTON_METADATA_ID];
+        if (typeof automationId !== "string")
+          throw new Error("Automation button has no associated ID");
+        const automation = getAutomation(automations, automationId);
+        if (automation === undefined)
+          throw new Error("There is no automation associated with an ID");
+        const newPhase =
+          automation.currentPhase < automation.totalPhases
+            ? automation.currentPhase + 1
+            : 1;
+        automation.currentPhase = newPhase;
+        changePhase(automation, newPhase);
+        OBR.scene.setMetadata({
+          [getPluginId(AUTOMATION_METADATA_ID)]: automations,
+        });
+      }
+    }
   });
-  OBR.scene.items.onChange((items) => {
+}
+
+function handleItemsChanges() {
+  OBR.scene.items.onChange(async (items) => {
     // Filter out phase changes too
     const automatedItems: { item: Item; automation: Automation }[] = [];
     items.forEach((item) => {
-      const automationIndex = automations.findIndex(
-        (automation) =>
-          automation.id ===
-          item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)],
+      const itemAutomation = getAutomation(
+        automations,
+        item.metadata[ITEM_AUTOMATION_METADATA_ID],
       );
-      if (automationIndex !== -1)
+      if (itemAutomation !== undefined)
         automatedItems.push({
           item,
-          automation: automations[automationIndex],
+          automation: itemAutomation,
         });
     });
     const changedItems = automatedItems.filter((item) => {
@@ -95,14 +142,26 @@ OBR.onReady(async () => {
         });
       },
     );
+    phaseChangeButtons = await getPhaseChangeButtons(items);
   });
-});
+}
 
-async function init() {
+function handleMetadataChanges() {
+  OBR.scene.onMetadataChange((metadata) => {
+    activeAutomationId = getAutomationContextMenuFromSceneMetadata(metadata);
+    automations = getAutomationsFromSceneMetadata(metadata);
+    createItemContextMenu();
+    createInsertPhaseControlContextMenu(activeAutomationId);
+  });
+}
+
+async function readySceneDependents() {
   const handleSceneReady = async () => {
-    automationContextMenu = await getAutomationContextMenuFromScene();
+    activeAutomationId = await getAutomationContextMenuFromScene();
     automations = await getAutomationsFromScene();
-    createContextMenu();
+    phaseChangeButtons = await getPhaseChangeButtons();
+    createItemContextMenu();
+    createInsertPhaseControlContextMenu(activeAutomationId);
   };
   // Handle when the scene is either changed or made ready after extension load
   OBR.scene.onReadyChange(async (isReady) => {
@@ -118,22 +177,14 @@ async function init() {
   }
 }
 
-function createContextMenu() {
-  if (automationContextMenu === NO_CONTEXT_MENU) {
-    OBR.contextMenu.remove(getPluginId(ADD_MENU_ID));
-    OBR.contextMenu.remove(getPluginId(REMOVE_MENU_ID));
+function createItemContextMenu() {
+  if (activeAutomationId === NO_CONTEXT_MENU) {
+    OBR.contextMenu.remove(ADD_MENU_ID);
+    OBR.contextMenu.remove(REMOVE_MENU_ID);
     return;
   }
-  const index = getIndexOfContextMenuAutomation();
-  if (index === -1) {
-    setAutomationContextMenu(NO_CONTEXT_MENU);
-    return;
-  }
-  // const name = automations[index].name;
-  // const phase = automations[index].currentPhase;
-  const automationId = automations[index].id;
-  const currentPhase = automations[index].currentPhase;
-  const automationProperties = automations[index].properties;
+  const activeAutomation = getAutomation(automations, activeAutomationId);
+  if (activeAutomation === undefined) return;
 
   const getAddLabel = () => {
     return `Add to Automation`;
@@ -142,7 +193,7 @@ function createContextMenu() {
     return `Remove from Automation`;
   };
   OBR.contextMenu.create({
-    id: getPluginId(ADD_MENU_ID),
+    id: ADD_MENU_ID,
     icons: [
       {
         icon: menuIcon,
@@ -150,7 +201,7 @@ function createContextMenu() {
         filter: {
           every: [
             {
-              key: ["metadata", `${getPluginId(ITEM_AUTOMATION_METADATA_ID)}`],
+              key: ["metadata", `${ITEM_AUTOMATION_METADATA_ID}`],
               value: undefined,
               operator: "==",
             },
@@ -166,16 +217,19 @@ function createContextMenu() {
         (item) => selection?.findIndex((id) => id === item.id) !== -1,
         (items) => {
           items.forEach((item) => {
-            item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)] =
-              automationId;
-            setPhaseData(item, currentPhase, automationProperties);
+            item.metadata[ITEM_AUTOMATION_METADATA_ID] = activeAutomation.id;
+            setPhaseData(
+              item,
+              activeAutomation.currentPhase,
+              activeAutomation.properties,
+            );
           });
         },
       );
     },
   });
   OBR.contextMenu.create({
-    id: getPluginId(REMOVE_MENU_ID),
+    id: REMOVE_MENU_ID,
     icons: [
       {
         icon: menuIcon,
@@ -183,7 +237,7 @@ function createContextMenu() {
         filter: {
           every: [
             {
-              key: ["metadata", `${getPluginId(ITEM_AUTOMATION_METADATA_ID)}`],
+              key: ["metadata", `${ITEM_AUTOMATION_METADATA_ID}`],
               value: undefined,
               operator: "!=",
             },
@@ -200,7 +254,7 @@ function createContextMenu() {
         (items) => {
           items.forEach((item) => {
             // Clear all extension metadata
-            item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)] = undefined;
+            item.metadata[ITEM_AUTOMATION_METADATA_ID] = undefined;
             for (let i = 1; i < MAXIMUM_PHASES; i++) {
               item.metadata[getPhaseMetadataId(i)] = undefined;
             }
@@ -211,7 +265,86 @@ function createContextMenu() {
   });
 }
 
-const getIndexOfContextMenuAutomation = () =>
-  automations.findIndex(
-    (automation) => automation.id === automationContextMenu,
+function getAutomation(
+  automations: Automation[],
+  activeAutomationId: string | unknown,
+) {
+  const automation = automations.find(
+    (automation) => automation.id === activeAutomationId,
   );
+  return automation;
+}
+
+function createInsertPhaseControlContextMenu(automationId: string) {
+  OBR.contextMenu.create({
+    id: getPluginId("insert-menu"),
+    icons: [
+      {
+        icon: menuIcon,
+        label: "Insert Automation Control",
+        filter: {
+          roles: ["GM"],
+          min: 0,
+          max: 0,
+        },
+      },
+    ],
+    onClick(context) {
+      OBR.player.deselect();
+      if (automationId !== NO_CONTEXT_MENU) {
+        const handleId = automationId + "-handle";
+        const automation = getAutomation(
+          automations,
+          automationId,
+        ) as Automation;
+        const handle = buildShape()
+          .id(handleId)
+          .shapeType("CIRCLE")
+          .position(context.selectionBounds.center)
+          .width(50)
+          .height(50)
+          .strokeOpacity(0)
+          .fillOpacity(1)
+          .visible(false)
+          .zIndex(20000)
+          .build();
+
+        const label = buildLabel()
+          .id(automationId + "-button")
+          .position(Math2.add(context.selectionBounds.center, { x: 0, y: -40 }))
+          .metadata({
+            [PHASE_CHANGE_BUTTON_METADATA_ID]: automationId,
+          })
+          .plainText(automation.name)
+          .attachedTo(handleId)
+          .locked(true)
+          .minViewScale(1)
+          .maxViewScale(2)
+          .pointerHeight(0)
+          .build();
+
+        OBR.scene.items.addItems([handle, label]);
+      }
+    },
+  });
+}
+
+async function getPhaseChangeButtons(items?: Item[]) {
+  if (items === undefined) items = await OBR.scene.items.getItems();
+  const phaseChangeButtons = [];
+  for (const item of items) {
+    if (item.metadata[PHASE_CHANGE_BUTTON_METADATA_ID] !== undefined) {
+      const phaseChangeButton: PhaseChangeButton = {
+        buttonItemId: item.id,
+        automationId: item.metadata[PHASE_CHANGE_BUTTON_METADATA_ID] as string,
+      };
+      phaseChangeButtons.push(phaseChangeButton);
+    }
+  }
+  return phaseChangeButtons;
+}
+
+type PhaseChangeButton = {
+  buttonItemId: string;
+  automationId: string;
+};

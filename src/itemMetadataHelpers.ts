@@ -11,7 +11,8 @@ interface PhaseData {
   imageUrl: string | null | undefined;
 }
 
-export const ITEM_AUTOMATION_METADATA_ID = "automationId";
+export const ITEM_AUTOMATION_METADATA_ID = getPluginId("automationId");
+export const PHASE_CHANGE_BUTTON_METADATA_ID = getPluginId("phaseChangeButton");
 export const MAXIMUM_PHASES = 18;
 
 export const getPhaseMetadataId = (phase: number) =>
