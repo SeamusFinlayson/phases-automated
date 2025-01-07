@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         action: resolve(__dirname, "src/action/action.html"),
         background: resolve(__dirname, "src/background/background.html"),
+        popover: resolve(__dirname, "src/controlPopover/controlPopover.html"),
       },
     },
   },
