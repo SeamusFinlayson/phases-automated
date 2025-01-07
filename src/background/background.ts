@@ -1,10 +1,4 @@
-import OBR, {
-  buildLabel,
-  buildShape,
-  isImage,
-  Item,
-  Math2,
-} from "@owlbear-rodeo/sdk";
+import OBR, { isImage, Item } from "@owlbear-rodeo/sdk";
 import {
   getAutomationsFromScene,
   getAutomationsFromSceneMetadata,
@@ -16,6 +10,9 @@ import {
 import { Automation } from "../types";
 import { getPluginId } from "../getPluginId";
 import {
+  BUTTON_CLICK_ACTION_METADATA_ID,
+  BUTTON_SET_PHASE_METADATA_ID,
+  ButtonClickAction,
   getPhaseData,
   getPhaseMetadataId,
   ITEM_AUTOMATION_METADATA_ID,
@@ -68,10 +65,27 @@ function handleSelectionChanges() {
         const automation = getAutomation(automations, automationId);
         if (automation === undefined)
           throw new Error("There is no automation associated with an ID");
-        const newPhase =
-          automation.currentPhase < automation.totalPhases
-            ? automation.currentPhase + 1
-            : 1;
+
+        let newPhase = 0;
+        const clickAction = phaseChangeButtonItem.metadata[
+          BUTTON_CLICK_ACTION_METADATA_ID
+        ] as ButtonClickAction | undefined;
+        const setPhase = phaseChangeButtonItem.metadata[
+          BUTTON_SET_PHASE_METADATA_ID
+        ] as number | undefined;
+        if (!clickAction || !setPhase || clickAction === "INCREMENT") {
+          newPhase =
+            automation.currentPhase < automation.totalPhases
+              ? automation.currentPhase + 1
+              : 1;
+        } else if (clickAction === "DECREMENT") {
+          newPhase =
+            automation.currentPhase > 1
+              ? automation.currentPhase - 1
+              : automation.totalPhases;
+        } else if (clickAction === "SET") {
+          newPhase = setPhase;
+        }
         automation.currentPhase = newPhase;
         changePhase(automation, newPhase);
         OBR.scene.setMetadata({
@@ -151,7 +165,7 @@ function handleMetadataChanges() {
     activeAutomationId = getAutomationContextMenuFromSceneMetadata(metadata);
     automations = getAutomationsFromSceneMetadata(metadata);
     createItemContextMenu();
-    createInsertPhaseControlContextMenu(activeAutomationId);
+    createInsertPhaseControlContextMenu();
   });
 }
 
@@ -161,7 +175,7 @@ async function readySceneDependents() {
     automations = await getAutomationsFromScene();
     phaseChangeButtons = await getPhaseChangeButtons();
     createItemContextMenu();
-    createInsertPhaseControlContextMenu(activeAutomationId);
+    createInsertPhaseControlContextMenu();
   };
   // Handle when the scene is either changed or made ready after extension load
   OBR.scene.onReadyChange(async (isReady) => {
@@ -275,7 +289,7 @@ function getAutomation(
   return automation;
 }
 
-function createInsertPhaseControlContextMenu(automationId: string) {
+function createInsertPhaseControlContextMenu() {
   OBR.contextMenu.create({
     id: getPluginId("insert-menu"),
     icons: [
@@ -289,42 +303,15 @@ function createInsertPhaseControlContextMenu(automationId: string) {
         },
       },
     ],
-    onClick(context) {
+    onClick(context, elementId) {
       OBR.player.deselect();
-      if (automationId !== NO_CONTEXT_MENU) {
-        const handleId = automationId + "-handle";
-        const automation = getAutomation(
-          automations,
-          automationId,
-        ) as Automation;
-        const handle = buildShape()
-          .id(handleId)
-          .shapeType("CIRCLE")
-          .position(context.selectionBounds.center)
-          .width(50)
-          .height(50)
-          .strokeOpacity(0)
-          .fillOpacity(1)
-          .visible(false)
-          .zIndex(20000)
-          .build();
-
-        const label = buildLabel()
-          .id(automationId + "-button")
-          .position(Math2.add(context.selectionBounds.center, { x: 0, y: -40 }))
-          .metadata({
-            [PHASE_CHANGE_BUTTON_METADATA_ID]: automationId,
-          })
-          .plainText(automation.name)
-          .attachedTo(handleId)
-          .locked(true)
-          .minViewScale(1)
-          .maxViewScale(2)
-          .pointerHeight(0)
-          .build();
-
-        OBR.scene.items.addItems([handle, label]);
-      }
+      OBR.popover.open({
+        id: getPluginId("popover"),
+        url: `/src/controlPopover/controlPopover.html?positionX=${context.selectionBounds.center.x}&positionY=${context.selectionBounds.center.y}`,
+        height: 400,
+        width: 300,
+        anchorElementId: elementId,
+      });
     },
   });
 }
