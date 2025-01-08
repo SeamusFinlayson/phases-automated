@@ -5,7 +5,7 @@ import {
   MAXIMUM_PHASES,
 } from "../itemMetadataHelpers";
 import { MINIMUM_PHASES } from "../sceneMetadataHelpers";
-import { Automation } from "../types";
+import { Automation, ReducerAction } from "../types";
 import PropertiesDropdown from "./PropertiesDropdown";
 
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
@@ -13,10 +13,8 @@ import RemoveCircleRoundedIcon from "@mui/icons-material/RemoveCircleRounded";
 import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
 import ArrowDownwardRoundedIcon from "@mui/icons-material/ArrowDownwardRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
-import { Action } from "./actionStateLogic";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import OBR, { Item } from "@owlbear-rodeo/sdk";
-import { getPluginId } from "../getPluginId";
 import PhaseButtonGroup from "./PhaseButtonGroup";
 
 export default function AutomationElement({
@@ -28,7 +26,7 @@ export default function AutomationElement({
   setRadioChecked,
 }: {
   automation: Automation;
-  dispatch: React.Dispatch<Action>;
+  dispatch: React.Dispatch<ReducerAction>;
   editing: boolean;
   index: number;
   radioChecked: boolean;
@@ -43,8 +41,7 @@ export default function AutomationElement({
       setItemCount(
         items.filter(
           (item) =>
-            automation.id ===
-            item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)],
+            automation.id === item.metadata[ITEM_AUTOMATION_METADATA_ID],
         ).length,
       );
     };
@@ -77,7 +74,7 @@ export default function AutomationElement({
   return (
     <div className="relative">
       {editing && (
-        <div className="bg-primary/85 dark:bg-primary-dark/85 absolute bottom-0 left-0 right-0 top-0 z-10 h-full w-full rounded-xl">
+        <div className="absolute bottom-0 left-0 right-0 top-0 z-10 h-full w-full rounded-xl bg-primary/85 dark:bg-primary-dark/85">
           <div className="flex h-full items-center justify-around">
             <div className="w-[40px]"></div>
             <button
@@ -185,7 +182,7 @@ export default function AutomationElement({
                 const automationItems = await OBR.scene.items.getItems(
                   (item) =>
                     automation.id ===
-                    item.metadata[getPluginId(ITEM_AUTOMATION_METADATA_ID)],
+                    item.metadata[ITEM_AUTOMATION_METADATA_ID],
                 );
                 OBR.player.select(
                   automationItems.map((item) => item.id),

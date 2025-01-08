@@ -18,8 +18,8 @@ dependencies:
     specifier: ^5.16.6
     version: 5.16.6(@emotion/react@11.13.0)(@emotion/styled@11.13.0)(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1)
   '@owlbear-rodeo/sdk':
-    specifier: ^2.4.0
-    version: 2.4.0
+    specifier: ^3.1.0
+    version: 3.1.0
   clsx:
     specifier: ^2.1.1
     version: 2.1.1
@@ -895,11 +895,11 @@ packages:
       fastq: 1.17.1
     dev: true
 
-  /@owlbear-rodeo/sdk@2.4.0:
-    resolution: {integrity: sha512-YN6O7AD1Be50bIKTvA+w0sALCthdchWtmIahCKFAFWoRJdIMYJOMxJ/bCylZIpEWROkFZ+sneh1UwRceKG6mHQ==}
+  /@owlbear-rodeo/sdk@3.1.0:
+    resolution: {integrity: sha512-iepvr522qlG4HDqBrt9yEFwpQk544kLnxmnojFwtd9qhzwcOS1nP/mfwhDHKucVINfNbVA5RWu2pE3VGRmHTDQ==}
     dependencies:
       events: 3.3.0
-      immer: 9.0.21
+      immer: 10.1.1
       js-base64: 3.7.7
       uuid: 9.0.1
     dev: false
@@ -1932,8 +1932,8 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
-  /immer@9.0.21:
-    resolution: {integrity: sha512-bc4NBHqOqSfRW7POMkHd51LvClaeMXpm8dx0e8oE2GORbq5aRK7Bxl4FyzVLdGtLmvLKL7BTDBG5ACQm4HWjTA==}
+  /immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
     dev: false
 
   /import-fresh@3.3.0:

@@ -1,13 +1,12 @@
-import { Automation } from "../types";
+import { Automation, ReducerAction } from "../types";
 import { cn } from "../utils";
-import { Action } from "./actionStateLogic";
 
 export default function PhaseButtonGroup({
   automation,
   dispatch,
 }: {
   automation: Automation;
-  dispatch: React.Dispatch<Action>;
+  dispatch: React.Dispatch<ReducerAction>;
 }): JSX.Element {
   const PhaseButtons = [];
 
@@ -19,7 +18,7 @@ export default function PhaseButtonGroup({
         className={cn(
           "h-8 w-full rounded-md bg-purple-100/25 hover:bg-purple-100/40 dark:bg-white/5 dark:hover:bg-white/10",
           {
-            "bg-primary/20 hover:bg-primary/25 dark:bg-primary-dark/30 dark:hover:bg-primary-dark/35 text-primary dark:text-primary-dark":
+            "bg-primary/20 text-primary hover:bg-primary/25 dark:bg-primary-dark/30 dark:text-primary-dark dark:hover:bg-primary-dark/35":
               i === automation.currentPhase,
           },
         )}

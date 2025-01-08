@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
-import "./index.css";
+import "../index.css";
 import { PluginThemeProvider } from "../PluginThemeProvider.tsx";
 import { CssBaseline } from "@mui/material";
 import OBR from "@owlbear-rodeo/sdk";

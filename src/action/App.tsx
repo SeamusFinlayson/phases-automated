@@ -16,9 +16,10 @@ export default function App({}: {}) {
 
   const [automations, dispatch] = useReducer(reducerWrapper, []);
   const [editing, setEditing] = useState(false);
-  const [sceneReady, setSceneReady] = useState(false);
   const [activeAutomationContextMenu, setActiveAutomationContextMenu] =
     useState(NO_CONTEXT_MENU);
+
+  const [sceneReady, setSceneReady] = useState(false);
 
   const handleActiveContextMenu = (id: string) => {
     setActiveAutomationContextMenu(id);
