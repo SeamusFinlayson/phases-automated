@@ -2,7 +2,7 @@ import { ToggleButton, IconButton, Radio, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import {
   ITEM_AUTOMATION_METADATA_ID,
-  MAXIMUM_PHASES,
+  SAFE_MAXIMUM_PHASES,
 } from "../itemMetadataHelpers";
 import { MINIMUM_PHASES } from "../sceneMetadataHelpers";
 import { Automation, ReducerAction } from "../types";
@@ -21,6 +21,8 @@ export default function AutomationElement({
   automation,
   dispatch,
   editing,
+  dangerMode,
+  setShowDangerModeToggle,
   index,
   radioChecked,
   setRadioChecked,
@@ -28,6 +30,8 @@ export default function AutomationElement({
   automation: Automation;
   dispatch: React.Dispatch<ReducerAction>;
   editing: boolean;
+  dangerMode: boolean;
+  setShowDangerModeToggle: React.Dispatch<React.SetStateAction<boolean>>;
   index: number;
   radioChecked: boolean;
   setRadioChecked: (id: string) => void;
@@ -163,16 +167,25 @@ export default function AutomationElement({
                 <RemoveCircleRoundedIcon></RemoveCircleRoundedIcon>
               </IconButton>
               <IconButton
-                onClick={() =>
+                onClick={() => {
+                  if (
+                    !dangerMode &&
+                    automation.totalPhases >= SAFE_MAXIMUM_PHASES
+                  ) {
+                    OBR.notification.show(
+                      "Safe mode limits an automation to twelve phases.",
+                      "ERROR",
+                    );
+                    setShowDangerModeToggle(true);
+                    return;
+                  }
+
                   dispatch({
                     type: "totalPhasesChange",
                     automationId: automation.id,
-                    totalPhases:
-                      automation.totalPhases < MAXIMUM_PHASES
-                        ? automation.totalPhases + 1
-                        : automation.totalPhases,
-                  })
-                }
+                    totalPhases: automation.totalPhases + 1,
+                  });
+                }}
               >
                 <AddCircleRoundedIcon></AddCircleRoundedIcon>
               </IconButton>

@@ -1,7 +1,7 @@
 import { Button, Radio, useTheme } from "@mui/material";
 
 import { useEffect, useReducer, useState } from "react";
-import OBR from "@owlbear-rodeo/sdk";
+import OBR, { Metadata } from "@owlbear-rodeo/sdk";
 import {
   getAutomationsFromSceneMetadata,
   NO_CONTEXT_MENU,
@@ -10,12 +10,16 @@ import {
 } from "../sceneMetadataHelpers";
 import AutomationElement from "./AutomationElement";
 import { MAX_AUTOMATIONS, reducerWrapper } from "./actionStateLogic";
+import { getDangerModeFromRoomMetadata } from "../roomMetadataHelpers";
+import DangerModeToggle from "./DangerModeToggle";
 
-export default function App({}: {}) {
+export default function App() {
   const isDark = useTheme().palette.mode === "dark";
 
   const [automations, dispatch] = useReducer(reducerWrapper, []);
   const [editing, setEditing] = useState(false);
+  const [dangerMode, setDangerMode] = useState(false);
+  const [showDangerModeToggle, setShowDangerModeToggle] = useState(false);
   const [activeAutomationContextMenu, setActiveAutomationContextMenu] =
     useState(NO_CONTEXT_MENU);
 
@@ -58,6 +62,14 @@ export default function App({}: {}) {
     return OBR.scene.onReadyChange(handleSceneReadyChange);
   }, []);
 
+  useEffect(() => {
+    const updateDangerMode = (roomMetadata: Metadata) => {
+      setDangerMode(getDangerModeFromRoomMetadata(roomMetadata));
+    };
+    OBR.room.getMetadata().then(updateDangerMode);
+    return OBR.room.onMetadataChange(updateDangerMode);
+  }, []);
+
   const automationElements: JSX.Element[] = [];
   for (let i = 0; i < automations.length; i++) {
     automationElements.push(
@@ -66,10 +78,12 @@ export default function App({}: {}) {
         automation={automations[i]}
         dispatch={dispatch}
         editing={editing}
+        dangerMode={dangerMode}
+        setShowDangerModeToggle={setShowDangerModeToggle}
         index={i}
         radioChecked={activeAutomationContextMenu === automations[i].id}
         setRadioChecked={() => handleActiveContextMenu(automations[i].id)}
-      ></AutomationElement>,
+      />,
     );
   }
 
@@ -112,6 +126,13 @@ export default function App({}: {}) {
           {editing ? "Done" : "Edit"}
         </Button>
       </div>
+      {(showDangerModeToggle || editing) && (
+        <DangerModeToggle
+          dangerMode={dangerMode}
+          showHideButton={!editing && showDangerModeToggle}
+          onHide={() => setShowDangerModeToggle(false)}
+        />
+      )}
     </>
   );
 

@@ -18,7 +18,7 @@ export const PHASE_CHANGE_BUTTON_METADATA_ID = getPluginId("phaseChangeButton");
 export const BUTTON_SET_PHASE_METADATA_ID = "setPhase";
 export const BUTTON_CLICK_ACTION_METADATA_ID = "buttonCLickACtion";
 
-export const MAXIMUM_PHASES = 18;
+export const SAFE_MAXIMUM_PHASES = 18;
 
 export const getPhaseMetadataId = (phase: number) =>
   getPluginId(`phase${phase}`);

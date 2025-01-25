@@ -14,9 +14,7 @@ import {
   BUTTON_SET_PHASE_METADATA_ID,
   ButtonClickAction,
   getPhaseData,
-  getPhaseMetadataId,
   ITEM_AUTOMATION_METADATA_ID,
-  MAXIMUM_PHASES,
   PHASE_CHANGE_BUTTON_METADATA_ID,
   setPhaseData,
 } from "../itemMetadataHelpers";
@@ -268,9 +266,9 @@ function createItemContextMenu() {
         (items) => {
           items.forEach((item) => {
             // Clear all extension metadata
-            item.metadata[ITEM_AUTOMATION_METADATA_ID] = undefined;
-            for (let i = 1; i < MAXIMUM_PHASES; i++) {
-              item.metadata[getPhaseMetadataId(i)] = undefined;
+            for (const key of Object.keys(item.metadata)) {
+              if (key.startsWith(getPluginId("")))
+                item.metadata[key] = undefined;
             }
           });
         },
