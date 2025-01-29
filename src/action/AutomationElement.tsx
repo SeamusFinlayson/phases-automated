@@ -173,7 +173,7 @@ export default function AutomationElement({
                     automation.totalPhases >= SAFE_MAXIMUM_PHASES
                   ) {
                     OBR.notification.show(
-                      "Safe mode limits an automation to twelve phases.",
+                      "Safe mode limits an automation to eighteen phases.",
                       "ERROR",
                     );
                     setShowDangerModeToggle(true);

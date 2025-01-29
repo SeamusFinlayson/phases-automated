@@ -32,7 +32,7 @@ export default function DangerModeToggle({
             </p>
             <p className="mt-2 text-left text-xs text-black/[0.6] dark:text-white/70">
               {
-                "In safe mode the number of phases an automation can have is limited to twelve. If an automation has too many automated properties and too many phases, copy and pasting it may cause your scene to crash. This crash can be fixed by reloading the page and causes no data loss."
+                "In safe mode the number of phases an automation can have is limited to eighteen. If an automation has too many automated properties and too many phases, copy and pasting it may cause your scene to crash. This crash can be fixed by reloading the page and causes no data loss."
               }
             </p>
           </div>
