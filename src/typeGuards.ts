@@ -1,7 +1,7 @@
 import { Vector2 } from "@owlbear-rodeo/sdk";
 import { ItemProperty, PhaseData } from "./types";
 
-export function isPhaseData(
+export function phaseDataHasAllProperties(
   potentialPhase: unknown,
   properties: ItemProperty[],
 ): potentialPhase is PhaseData {
@@ -21,6 +21,7 @@ export function isPhaseData(
 
   if (properties.includes("VISIBLE") && typeof phaseData?.visible !== "boolean")
     return false;
+  console.log("here");
 
   if (properties.includes("LOCKED") && typeof phaseData?.locked !== "boolean")
     return false;

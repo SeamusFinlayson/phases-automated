@@ -18,6 +18,7 @@ import {
   setPhaseData,
 } from "../itemMetadataHelpers";
 import { changePhase } from "../changePhase";
+import { phaseDataHasAllProperties } from "../typeGuards";
 
 const menuIcon = new URL(
   "../assets/iconNoFill.svg#icon",
@@ -109,17 +110,13 @@ function handleItemsChanges() {
         });
     });
     const changedItems = automatedItems.filter((item) => {
-      const phaseData = getPhaseData(
-        item.item,
-        item.automation.currentPhase,
-        item.automation.properties,
-      );
+      const phaseData = getPhaseData(item.item, item.automation.currentPhase);
       // console.log("item item position", item.item.position);
       // console.log("phase data", phaseData);
       // console.log(item.automation.properties.includes("POSITION"));
       // console.log(item.item.visible, phaseData?.visible);
       return (
-        phaseData !== null &&
+        phaseDataHasAllProperties(phaseData, item.automation.properties) &&
         ((item.automation.properties.includes("POSITION") &&
           (item.item.position.x !== phaseData.position?.x ||
             item.item.position.y !== phaseData.position?.y)) ||
@@ -149,6 +146,7 @@ function handleItemsChanges() {
             item,
             changedItems[index].automation.currentPhase,
             changedItems[index].automation.properties,
+            false,
           );
         });
       },
@@ -233,6 +231,7 @@ function createItemContextMenu() {
               item,
               activeAutomation.currentPhase,
               activeAutomation.properties,
+              false,
             );
           });
         },

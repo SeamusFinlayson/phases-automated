@@ -68,12 +68,12 @@ export type ReducerAction =
     };
 
 export interface PhaseData {
-  position: Vector2 | undefined;
-  scale: Vector2 | undefined;
-  rotation: number | undefined;
-  visible: boolean | undefined;
-  locked: boolean | undefined;
-  imageUrl: string | null | undefined;
+  position?: Vector2;
+  scale?: Vector2;
+  rotation?: number;
+  visible?: boolean;
+  locked?: boolean;
+  imageUrl?: string | null;
 }
 
 export type ButtonClickAction = "INCREMENT" | "DECREMENT" | "SET";
