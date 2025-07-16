@@ -1,4 +1,4 @@
-import { Vector2 } from "@owlbear-rodeo/sdk";
+import { ImageContent, ImageGrid, Vector2 } from "@owlbear-rodeo/sdk";
 
 export type ItemProperty =
   | "POSITION"
@@ -6,10 +6,10 @@ export type ItemProperty =
   | "SCALE"
   | "VISIBLE"
   | "LOCKED"
-  | "NAME"
-  | "Z_INDEX"
-  | "METADATA"
-  | "IMAGE_URL";
+  // | "NAME"
+  // | "Z_INDEX"
+  // | "METADATA"
+  | "IMAGE_URL"; // Actually automates image content as of 1.3.1
 
 export type AppState = {
   automations: Automation[];
@@ -73,7 +73,11 @@ export interface PhaseData {
   rotation?: number;
   visible?: boolean;
   locked?: boolean;
-  imageUrl?: string | null;
+  imageUrl?: string | null; // deprecated but existing image phases are preserved, null if the automation includes images but the item is not an image item
+  imageData?: {
+    content: ImageContent;
+    grid: ImageGrid;
+  } | null; // null if the automation includes images but the item is not an image item
 }
 
 export type ButtonClickAction = "INCREMENT" | "DECREMENT" | "SET";

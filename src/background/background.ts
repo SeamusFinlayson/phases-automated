@@ -131,7 +131,9 @@ function handleItemsChanges() {
             item.item.locked !== phaseData.locked) ||
           (item.automation.properties.includes("IMAGE_URL") &&
             isImage(item.item) &&
-            item.item.image.url !== phaseData.imageUrl))
+            ((phaseData.imageData === undefined &&
+              item.item.image.url !== phaseData.imageUrl) ||
+              item.item.image.url !== phaseData.imageData?.content.url)))
       );
     });
     // console.log("length of changed items", changedItems.length);
