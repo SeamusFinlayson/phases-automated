@@ -1,17 +1,7 @@
-import { isImage, Item, Vector2 } from "@owlbear-rodeo/sdk";
+import { isImage, Item } from "@owlbear-rodeo/sdk";
 import { getPluginId } from "./getPluginId";
-import { ItemProperty } from "./types";
-
-interface PhaseData {
-  position: Vector2 | undefined;
-  scale: Vector2 | undefined;
-  rotation: number | undefined;
-  visible: boolean | undefined;
-  locked: boolean | undefined;
-  imageUrl: string | null | undefined;
-}
-
-export type ButtonClickAction = "INCREMENT" | "DECREMENT" | "SET";
+import { ItemProperty, PhaseData } from "./types";
+import { isPhaseData } from "./typeGuards";
 
 export const ITEM_AUTOMATION_METADATA_ID = getPluginId("automationId");
 export const PHASE_CHANGE_BUTTON_METADATA_ID = getPluginId("phaseChangeButton");
@@ -100,47 +90,3 @@ export const getPhaseData = (
     return null;
   } else return phaseData;
 };
-
-export function isPhaseData(
-  potentialPhase: unknown,
-  properties: ItemProperty[],
-): potentialPhase is PhaseData {
-  const phaseData = potentialPhase as PhaseData;
-
-  if (properties.includes("POSITION") && !isVector2(phaseData?.position))
-    return false;
-
-  if (properties.includes("SCALE") && !isVector2(phaseData?.scale))
-    return false;
-
-  if (
-    properties.includes("ROTATION") &&
-    typeof phaseData?.rotation !== "number"
-  )
-    return false;
-
-  if (properties.includes("VISIBLE") && typeof phaseData?.visible !== "boolean")
-    return false;
-
-  if (properties.includes("LOCKED") && typeof phaseData?.locked !== "boolean")
-    return false;
-
-  if (
-    properties.includes("IMAGE_URL") &&
-    typeof phaseData?.imageUrl !== "string" &&
-    typeof phaseData?.imageUrl !== "object" // TODO: checking if the type is object is not a sufficient check for null, null is a valid value
-  )
-    return false;
-
-  return true;
-}
-
-export function isVector2(vector2: unknown): vector2 is Vector2 {
-  const test = vector2 as Vector2;
-
-  if (typeof vector2 === "undefined") return false;
-  if (typeof test.x !== "number") return false;
-  if (typeof test.y !== "number") return false;
-
-  return true;
-}

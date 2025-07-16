@@ -1,3 +1,5 @@
+import { Vector2 } from "@owlbear-rodeo/sdk";
+
 export type ItemProperty =
   | "POSITION"
   | "ROTATION"
@@ -64,3 +66,14 @@ export type ReducerAction =
       automationId: string;
       newProperties: ItemProperty[];
     };
+
+export interface PhaseData {
+  position: Vector2 | undefined;
+  scale: Vector2 | undefined;
+  rotation: number | undefined;
+  visible: boolean | undefined;
+  locked: boolean | undefined;
+  imageUrl: string | null | undefined;
+}
+
+export type ButtonClickAction = "INCREMENT" | "DECREMENT" | "SET";

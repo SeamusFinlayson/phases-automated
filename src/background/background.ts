@@ -7,12 +7,11 @@ import {
   NO_CONTEXT_MENU,
   AUTOMATION_METADATA_ID,
 } from "../sceneMetadataHelpers";
-import { Automation } from "../types";
+import { Automation, ButtonClickAction } from "../types";
 import { getPluginId } from "../getPluginId";
 import {
   BUTTON_CLICK_ACTION_METADATA_ID,
   BUTTON_SET_PHASE_METADATA_ID,
-  ButtonClickAction,
   getPhaseData,
   ITEM_AUTOMATION_METADATA_ID,
   PHASE_CHANGE_BUTTON_METADATA_ID,
