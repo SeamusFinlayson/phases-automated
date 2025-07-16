@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Automation } from "../types";
+import { Automation, ButtonClickAction } from "../types";
 import {
   getAutomationsFromScene,
   getAutomationsFromSceneMetadata,
@@ -21,7 +21,6 @@ import OBR, {
 import {
   BUTTON_CLICK_ACTION_METADATA_ID,
   BUTTON_SET_PHASE_METADATA_ID,
-  ButtonClickAction,
   PHASE_CHANGE_BUTTON_METADATA_ID,
 } from "../itemMetadataHelpers";
 import { getPluginId } from "../getPluginId";

@@ -7,18 +7,18 @@ import {
   NO_CONTEXT_MENU,
   AUTOMATION_METADATA_ID,
 } from "../sceneMetadataHelpers";
-import { Automation } from "../types";
+import { Automation, ButtonClickAction } from "../types";
 import { getPluginId } from "../getPluginId";
 import {
   BUTTON_CLICK_ACTION_METADATA_ID,
   BUTTON_SET_PHASE_METADATA_ID,
-  ButtonClickAction,
   getPhaseData,
   ITEM_AUTOMATION_METADATA_ID,
   PHASE_CHANGE_BUTTON_METADATA_ID,
   setPhaseData,
 } from "../itemMetadataHelpers";
 import { changePhase } from "../changePhase";
+import { phaseDataHasAllProperties } from "../typeGuards";
 
 const menuIcon = new URL(
   "../assets/iconNoFill.svg#icon",
@@ -110,17 +110,13 @@ function handleItemsChanges() {
         });
     });
     const changedItems = automatedItems.filter((item) => {
-      const phaseData = getPhaseData(
-        item.item,
-        item.automation.currentPhase,
-        item.automation.properties,
-      );
+      const phaseData = getPhaseData(item.item, item.automation.currentPhase);
       // console.log("item item position", item.item.position);
       // console.log("phase data", phaseData);
       // console.log(item.automation.properties.includes("POSITION"));
       // console.log(item.item.visible, phaseData?.visible);
       return (
-        phaseData !== null &&
+        phaseDataHasAllProperties(phaseData, item.automation.properties) &&
         ((item.automation.properties.includes("POSITION") &&
           (item.item.position.x !== phaseData.position?.x ||
             item.item.position.y !== phaseData.position?.y)) ||
@@ -135,7 +131,9 @@ function handleItemsChanges() {
             item.item.locked !== phaseData.locked) ||
           (item.automation.properties.includes("IMAGE_URL") &&
             isImage(item.item) &&
-            item.item.image.url !== phaseData.imageUrl))
+            ((phaseData.imageData === undefined &&
+              item.item.image.url !== phaseData.imageUrl) ||
+              item.item.image.url !== phaseData.imageData?.content.url)))
       );
     });
     // console.log("length of changed items", changedItems.length);
@@ -150,6 +148,7 @@ function handleItemsChanges() {
             item,
             changedItems[index].automation.currentPhase,
             changedItems[index].automation.properties,
+            false,
           );
         });
       },
@@ -234,6 +233,7 @@ function createItemContextMenu() {
               item,
               activeAutomation.currentPhase,
               activeAutomation.properties,
+              false,
             );
           });
         },

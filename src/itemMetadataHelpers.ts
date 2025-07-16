@@ -1,17 +1,7 @@
-import { isImage, Item, Vector2 } from "@owlbear-rodeo/sdk";
+import { isImage, Item } from "@owlbear-rodeo/sdk";
 import { getPluginId } from "./getPluginId";
-import { ItemProperty } from "./types";
-
-interface PhaseData {
-  position: Vector2 | undefined;
-  scale: Vector2 | undefined;
-  rotation: number | undefined;
-  visible: boolean | undefined;
-  locked: boolean | undefined;
-  imageUrl: string | null | undefined;
-}
-
-export type ButtonClickAction = "INCREMENT" | "DECREMENT" | "SET";
+import { ItemProperty, PhaseData } from "./types";
+import { isImageContent, isImageGrid } from "./typeGuards";
 
 export const ITEM_AUTOMATION_METADATA_ID = getPluginId("automationId");
 export const PHASE_CHANGE_BUTTON_METADATA_ID = getPluginId("phaseChangeButton");
@@ -27,120 +17,103 @@ export const setPhaseData = (
   item: Item,
   phase: number,
   properties: ItemProperty[],
-  preventOverwrite: boolean = false,
+  preventOverwrite: boolean,
 ) => {
   if (typeof phase !== "number") throw "Error: expected type number";
-  //Add properties if they do not already exist
-  const storedPosition = getPhaseData(item, phase, ["POSITION"])?.position;
-  const storedScale = getPhaseData(item, phase, ["SCALE"])?.scale;
-  const storedRotation = getPhaseData(item, phase, ["ROTATION"])?.rotation;
-  const storedVisible = getPhaseData(item, phase, ["VISIBLE"])?.visible;
-  const storedLocked = getPhaseData(item, phase, ["LOCKED"])?.locked;
-  const storedImageUrl = getPhaseData(item, phase, ["IMAGE_URL"])?.imageUrl;
 
-  item.metadata[getPhaseMetadataId(phase)] = {
-    ...(properties.includes("POSITION")
-      ? preventOverwrite && storedPosition !== undefined
-        ? { position: storedPosition }
-        : { position: item.position }
-      : {}),
-    ...(properties.includes("SCALE")
-      ? preventOverwrite && storedScale !== undefined
-        ? { scale: storedScale }
-        : { scale: item.scale }
-      : {}),
-    ...(properties.includes("ROTATION")
-      ? preventOverwrite && storedRotation !== undefined
-        ? { rotation: storedRotation }
-        : { rotation: item.rotation }
-      : {}),
-    ...(properties.includes("VISIBLE")
-      ? preventOverwrite && storedVisible !== undefined
-        ? { visible: storedVisible }
-        : { visible: item.visible }
-      : {}),
-    ...(properties.includes("LOCKED")
-      ? preventOverwrite && storedLocked !== undefined
-        ? { locked: storedLocked }
-        : { locked: item.locked }
-      : {}),
-    ...(properties.includes("IMAGE_URL")
-      ? preventOverwrite && storedImageUrl !== undefined
-        ? { imageUrl: storedImageUrl }
-        : { imageUrl: isImage(item) ? item.image.url : null }
-      : {}),
-  };
+  const stored = getPhaseData(item, phase);
+
+  const newPhaseMetadata: PhaseData = {};
+
+  if (properties.includes("POSITION")) {
+    Object.assign(newPhaseMetadata, {
+      position:
+        preventOverwrite && stored.position !== undefined
+          ? stored.position
+          : item.position,
+    } satisfies PhaseData);
+  }
+  if (properties.includes("SCALE")) {
+    Object.assign(newPhaseMetadata, {
+      scale:
+        preventOverwrite && stored.scale !== undefined
+          ? stored.scale
+          : item.scale,
+    } satisfies PhaseData);
+  }
+  if (properties.includes("ROTATION")) {
+    Object.assign(newPhaseMetadata, {
+      rotation:
+        preventOverwrite && stored.rotation !== undefined
+          ? stored.rotation
+          : item.rotation,
+    } satisfies PhaseData);
+  }
+  if (properties.includes("VISIBLE")) {
+    Object.assign(newPhaseMetadata, {
+      visible:
+        preventOverwrite && stored.visible !== undefined
+          ? stored.visible
+          : item.visible,
+    } satisfies PhaseData);
+  }
+  if (properties.includes("LOCKED")) {
+    Object.assign(newPhaseMetadata, {
+      locked:
+        preventOverwrite && stored.locked !== undefined
+          ? stored.locked
+          : item.locked,
+    } satisfies PhaseData);
+  }
+  if (properties.includes("IMAGE_URL")) {
+    // Preserve deprecated image url automations
+    if (typeof stored.imageUrl === "string") {
+      Object.assign(newPhaseMetadata, {
+        imageUrl:
+          preventOverwrite && stored.imageUrl !== undefined
+            ? stored.imageUrl
+            : isImage(item)
+              ? item.image.url
+              : null,
+      } satisfies PhaseData);
+      // Standard image content automation
+    } else {
+      Object.assign(newPhaseMetadata, {
+        imageData:
+          preventOverwrite && stored.imageData !== undefined
+            ? stored.imageData
+            : isImage(item)
+              ? { content: item.image, grid: item.grid }
+              : null,
+      } satisfies PhaseData);
+    }
+  }
+
+  item.metadata[getPhaseMetadataId(phase)] = newPhaseMetadata;
 };
 
-export const setItemToPhase = (
-  item: Item,
-  phase: number,
-  properties: ItemProperty[],
-) => {
-  const phaseData = getPhaseData(item, phase, properties);
-  if (phaseData) {
-    if (phaseData.position) item.position = phaseData.position;
-    if (phaseData.scale) item.scale = phaseData.scale;
-    if (phaseData.rotation !== undefined) item.rotation = phaseData.rotation;
-    if (phaseData.visible !== undefined) item.visible = phaseData.visible;
-    if (phaseData.locked !== undefined) item.locked = phaseData.locked;
-    if (typeof phaseData.imageUrl === "string" && isImage(item))
-      item.image.url = phaseData.imageUrl;
-    item = { ...item };
-  } else console.log("bad phase data");
+export const setItemToPhase = (item: Item, phase: number) => {
+  const phaseData = getPhaseData(item, phase);
+  if (phaseData.position) item.position = phaseData.position;
+  if (phaseData.scale) item.scale = phaseData.scale;
+  if (phaseData.rotation !== undefined) item.rotation = phaseData.rotation;
+  if (phaseData.visible !== undefined) item.visible = phaseData.visible;
+  if (phaseData.locked !== undefined) item.locked = phaseData.locked;
+  if (typeof phaseData.imageUrl === "string" && isImage(item))
+    item.image.url = phaseData.imageUrl;
+  if (
+    isImageContent(phaseData.imageData?.content) &&
+    isImageGrid(phaseData.imageData.grid) &&
+    isImage(item)
+  ) {
+    item.image = phaseData.imageData.content;
+    item.grid = phaseData.imageData.grid;
+  }
+  item = { ...item };
 };
 
-export const getPhaseData = (
-  item: Item,
-  phase: number,
-  properties: ItemProperty[],
-): PhaseData | null => {
+export const getPhaseData = (item: Item, phase: number): PhaseData => {
   const phaseData: unknown = item.metadata[getPhaseMetadataId(phase)];
-  if (!isPhaseData(phaseData, properties)) {
-    return null;
-  } else return phaseData;
+  if (typeof phaseData !== "object" || phaseData === null) return {};
+  return phaseData;
 };
-
-export function isPhaseData(
-  potentialPhase: unknown,
-  properties: ItemProperty[],
-): potentialPhase is PhaseData {
-  const phaseData = potentialPhase as PhaseData;
-
-  if (properties.includes("POSITION") && !isVector2(phaseData?.position))
-    return false;
-
-  if (properties.includes("SCALE") && !isVector2(phaseData?.scale))
-    return false;
-
-  if (
-    properties.includes("ROTATION") &&
-    typeof phaseData?.rotation !== "number"
-  )
-    return false;
-
-  if (properties.includes("VISIBLE") && typeof phaseData?.visible !== "boolean")
-    return false;
-
-  if (properties.includes("LOCKED") && typeof phaseData?.locked !== "boolean")
-    return false;
-
-  if (
-    properties.includes("IMAGE_URL") &&
-    typeof phaseData?.imageUrl !== "string" &&
-    typeof phaseData?.imageUrl !== "object" // TODO: checking if the type is object is not a sufficient check for null, null is a valid value
-  )
-    return false;
-
-  return true;
-}
-
-export function isVector2(vector2: unknown): vector2 is Vector2 {
-  const test = vector2 as Vector2;
-
-  if (typeof vector2 === "undefined") return false;
-  if (typeof test.x !== "number") return false;
-  if (typeof test.y !== "number") return false;
-
-  return true;
-}
