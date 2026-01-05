@@ -31,6 +31,7 @@ const REMOVE_MENU_ID = getPluginId("removeFromAutomation");
 let automations: Automation[] = [];
 let activeAutomationId: string = NO_CONTEXT_MENU;
 let phaseChangeButtons: PhaseChangeButton[] = [];
+let itemsStringLast: string = "";
 
 OBR.onReady(async () => {
   readySceneDependents();
@@ -39,6 +40,7 @@ OBR.onReady(async () => {
   handleSelectionChanges();
 });
 
+// For in scene buttons
 function handleSelectionChanges() {
   OBR.player.onChange(async (player) => {
     if (player.selection && player.selection.length === 1) {
@@ -96,6 +98,22 @@ function handleSelectionChanges() {
 
 function handleItemsChanges() {
   OBR.scene.items.onChange(async (items) => {
+    const itemsString = JSON.stringify(
+      items.map((item) => ({
+        m: item.metadata,
+        p: item.position,
+        v: item.visible,
+        s: item.scale,
+        i: isImage(item) ? item.image : "-",
+        l: item.locked,
+        r: item.rotation,
+      })),
+    );
+    if (itemsString === itemsStringLast) {
+      itemsStringLast = itemsString;
+      return;
+    }
+    itemsStringLast = itemsString;
     // Filter out phase changes too
     const automatedItems: { item: Item; automation: Automation }[] = [];
     items.forEach((item) => {
@@ -136,7 +154,6 @@ function handleItemsChanges() {
               item.item.image.url !== phaseData.imageData?.content.url)))
       );
     });
-    // console.log("length of changed items", changedItems.length);
     OBR.scene.items.updateItems(
       changedItems.map((item) => item.item),
       (items) => {
