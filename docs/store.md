@@ -3,10 +3,10 @@ title: Phases Automated
 description: Build encounters with complex automations managed through a simple menu
 author: Seamus Finlayson
 image: https://github.com/user-attachments/assets/82a1294e-847c-499c-becf-0067a23699fa
-icon: https://phases-automated.onrender.com/icon.svg
+icon: https://phases-automated.seamus-finlayson.ca/icon.svg
 tags:
   - automation
-manifest: https://phases-automated.onrender.com/manifest.json
+manifest: https://phases-automated.seamus-finlayson.ca/manifest.json
 learn-more: https://github.com/SeamusFinlayson/Phases-Automated
 ---
 
