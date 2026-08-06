@@ -4,14 +4,14 @@
   "manifest_version": 1,
   "author": "Seamus Finlayson",
   "homepage_url": "https://github.com/SeamusFinlayson/phases-automated",
-  "icon": "/icon.svg",
+  "icon": "https://phases-automated.seamus-finlayson.ca/icon.svg",
   "description": "Build encounters with complex automations managed through a simple menu",
   "action": {
     "title": "Phases Automated",
-    "icon": "/iconNoFill.svg",
-    "popover": "/src/action/action.html",
+    "icon": "https://phases-automated.seamus-finlayson.ca/iconNoFill.svg",
+    "popover": "https://phases-automated.seamus-finlayson.ca/src/action/action.html",
     "height": 700,
     "width": 300
   },
-  "background_url": "/src/background/background.html"
+  "background_url": "https://phases-automated.seamus-finlayson.ca/src/background/background.html"
 }
